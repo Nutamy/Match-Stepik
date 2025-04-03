@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: BlankTile
   m_EditorClassIdentifier: 
   _sprite: {fileID: 0}
-  _tileKind: 0
+  _tileKind: 1
   _isInteractable: 0

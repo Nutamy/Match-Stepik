@@ -13,7 +13,6 @@ namespace DI
     public class GameScope :LifetimeScope
     {
         [SerializeField] private GameBoard _gameBoard;
-        [SerializeField] private BlankTileSetup _blankTileSetup;
         [SerializeField] private GameResourcesLoader _resourcesLoader;
         protected override void Configure(IContainerBuilder builder)
         {
@@ -21,7 +20,7 @@ namespace DI
             builder.Register<GameDebug>(Lifetime.Singleton);
             builder.RegisterInstance(_gameBoard);
             builder.RegisterInstance(_resourcesLoader);
-            builder.RegisterInstance(_blankTileSetup);
+            builder.Register<BlankTileSetup>(Lifetime.Singleton);
             builder.Register<SetupCamera>(Lifetime.Singleton);
             builder.Register<TilePool>(Lifetime.Singleton);
         }
