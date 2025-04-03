@@ -5,7 +5,7 @@ namespace Game.Tiles
     public enum TileKind
     {
         Normal,
-        Blabk,
+        Blank,
         Jelly
     }
     [CreateAssetMenu(fileName = "TileConfig", menuName = "Config/TileConfig")]
