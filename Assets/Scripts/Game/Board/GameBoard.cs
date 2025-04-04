@@ -25,14 +25,13 @@ namespace Game.Board
         private InputReader _inputReader;
         
 
-        private void Start()
+        private void Awake()
         {
             _inputReader = new InputReader();
             _inputReader.EnableInputs(true);
             _inputReader.Click += ClickTest;
             _grid.SetupGrid(_levelConfig.Width,_levelConfig.Height);
             _blankTileSetup.SetupBlanks(_levelConfig);
-            CreateBoard();
             _setupCamera.SetCamera(_grid.Width, _grid.Height, false);
             if (isDebug)
             {
