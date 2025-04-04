@@ -10,7 +10,7 @@ namespace Game.Utils
         {
             _isVertical = isVertical;
             var xPos = width / 2f - 0.5f;
-            var yPos = height / 2f + 0.5f;
+            var yPos = height / 2f + 0.01f;
             Camera.main.gameObject.transform.position = new Vector3(xPos, yPos, -10f);
             Camera.main.orthographicSize = GetOrthoSize(width, height);
         }

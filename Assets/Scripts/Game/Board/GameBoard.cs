@@ -24,15 +24,11 @@ namespace Game.Board
         private TilePool _tilePool;
         private SetupCamera _setupCamera;
         private GameDebug _gameDebug;
-        private InputReader _inputReader;
         private IAnimation _animation;
         
 
         private void Awake()
         {
-            _inputReader = new InputReader();
-            _inputReader.EnableInputs(true);
-            _inputReader.Click += ClickTest;
             _grid.SetupGrid(_levelConfig.Width,_levelConfig.Height);
             _blankTileSetup.SetupBlanks(_levelConfig);
             _setupCamera.SetCamera(_grid.Width, _grid.Height, false);
@@ -42,10 +38,6 @@ namespace Game.Board
             }
         }
 
-        private void OnDisable()
-        {
-            _inputReader.Click -= ClickTest;
-        }
 
         private void ClickTest()
         {

@@ -27,8 +27,8 @@ namespace Game.GridSystem
 
         public Vector2Int WorldToGrid(Vector3 worldPosition)
         {
-            var x = Mathf.FloorToInt(worldPosition.x);
-            var y = Mathf.FloorToInt(worldPosition.y);
+            var x = Mathf.RoundToInt(worldPosition.x);
+            var y = Mathf.RoundToInt(worldPosition.y);
             return new Vector2Int(x,y);
         }
 
