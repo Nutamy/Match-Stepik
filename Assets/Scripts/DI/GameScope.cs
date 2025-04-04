@@ -1,4 +1,5 @@
-﻿using Game.Board;
+﻿using Animations;
+using Game.Board;
 using Game.GridSystem;
 using Game.Tiles;
 using Game.Utils;
@@ -17,6 +18,7 @@ namespace DI
         protected override void Configure(IContainerBuilder builder)
         {
             builder.Register<Grid>(Lifetime.Singleton);
+            builder.Register<IAnimation, AnimationManager>(Lifetime.Singleton);
             builder.Register<GameDebug>(Lifetime.Singleton);
             builder.RegisterInstance(_gameBoard);
             builder.RegisterInstance(_resourcesLoader);
