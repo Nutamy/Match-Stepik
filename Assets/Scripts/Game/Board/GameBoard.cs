@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Animations;
 using Game.GridSystem;
+using Game.MatchTiles;
 using Game.Tiles;
 using Game.Utils;
 using Input;
@@ -25,6 +26,7 @@ namespace Game.Board
         private SetupCamera _setupCamera;
         private GameDebug _gameDebug;
         private IAnimation _animation;
+        private MatchFinder _matchFinder;
         
 
         private void Awake()
@@ -47,6 +49,15 @@ namespace Game.Board
         public void CreateBoard()
         {
             FillBoard();
+            int counter = 0;
+            while (_matchFinder.CheckBoardForMatches(_grid))
+            {
+                ClearBoard();
+                FillBoard();
+                counter++;
+            }
+            _matchFinder.ClearTilesToRemove();
+            Debug.Log("Board has been generated " + counter + " times");
             RevealTiles();
         }
 
@@ -83,8 +94,19 @@ namespace Game.Board
             }
         }
 
+        private void ClearBoard()
+        {
+            if(_tilesToRefill == null) return;
+            foreach (var tile in _tilesToRefill)
+            {
+                _grid.SetValue(tile.transform.position, null);
+                tile.gameObject.SetActive(false);
+            }
+            _tilesToRefill.Clear();
+        }
+
         [Inject]
-        private void Construct(Grid grid, SetupCamera setupCamera, TilePool tilePool, GameDebug gameDebug, BlankTileSetup blankTileSetup, IAnimation animation)
+        private void Construct(Grid grid, SetupCamera setupCamera, TilePool tilePool, GameDebug gameDebug, BlankTileSetup blankTileSetup, IAnimation animation, MatchFinder matchFinder)
         {
             _grid = grid;
             _setupCamera = setupCamera;
@@ -92,6 +114,7 @@ namespace Game.Board
             _gameDebug = gameDebug;
             _blankTileSetup = blankTileSetup;
             _animation = animation;
+            _matchFinder = matchFinder;
         }
     }
 }
