@@ -150,7 +150,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _levelConfig: {fileID: 11400000, guid: 0499699207fba1947923158bf12d8dc3, type: 2}
   _tileConfig: {fileID: 11400000, guid: 6aeb367c68608cc42a9b4795f9e7984d, type: 2}
-  isDebug: 0
+  isDebug: 1
 --- !u!4 &222783756
 Transform:
   m_ObjectHideFlags: 0

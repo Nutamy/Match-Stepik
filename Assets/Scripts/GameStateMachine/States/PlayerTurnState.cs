@@ -2,7 +2,6 @@
 using Animations;
 using Game.Tiles;
 using Input;
-using Unity.VisualScripting;
 using UnityEngine;
 using Grid = Game.GridSystem.Grid;
 
@@ -46,13 +45,13 @@ namespace GameStateMachine.States
                 Debug.Log("DeselectTile();");
                 Debug.Log($"X={clickPosition.x}\nY={clickPosition.y}");
             }
-            else if(_grid.CurrentPosition != clickPosition && IsSwapable(_grid.CurrentPosition, _grid.TargetPosition))
+            else if(_grid.CurrentPosition != clickPosition && IsSwapable(_grid.CurrentPosition, clickPosition))
             {
                 _grid.SetTargetPosition(clickPosition);
                 _animation.AnimateTile(_grid.GetValue(_grid.CurrentPosition.x, _grid.CurrentPosition.y), 1f);
                 Debug.Log("IsSwapable");
                 Debug.Log($"X={clickPosition.x}\nY={clickPosition.y}");
-                //_stateSwitcher.SwichState<SwapTilesState>();
+                _stateSwitcher.SwichState<SwapTilesState>();
             }
         }
 
@@ -90,9 +89,9 @@ namespace GameStateMachine.States
             return gridPos.x >= 0 && gridPos.x < _grid.Width && gridPos.y >= 0 && gridPos.y < _grid.Height;
         }
 
-        private bool IsSwapable(Vector2Int currentTilePos, Vector2Int targetTilePos)
-        {
-            return Mathf.Abs(currentTilePos.x - targetTilePos.x) + Mathf.Abs(currentTilePos.y - targetTilePos.y) == 1;
-        }
+        private bool IsSwapable(Vector2Int currentTilePos, Vector2Int targetTilePos) => 
+            Mathf.Abs(currentTilePos.x - targetTilePos.x) + 
+            Mathf.Abs(currentTilePos.y - targetTilePos.y) == 1;
+        
     }
 }
