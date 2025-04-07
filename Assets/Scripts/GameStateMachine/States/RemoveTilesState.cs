@@ -29,7 +29,7 @@ namespace GameStateMachine.States
             _cts = new CancellationTokenSource();
             // score ++
             await RemoveTiles(_matchFinder.TilesToRemove, _grid);
-            //_stateSwitcher.SwichState<RefillGridState>();
+            _stateSwitcher.SwichState<RefillGridState>();
         }
 
         public void Exit()
