@@ -4,6 +4,7 @@ using Animations;
 using Game.MatchTiles;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using Game.Score;
 using Game.Tiles;
 using UnityEngine;
 using Grid = Game.GridSystem.Grid;
@@ -17,13 +18,15 @@ namespace GameStateMachine.States
         private IStateSwitcher _stateSwitcher;
         private IAnimation _animation;
         private MatchFinder _matchFinder;
+        private GameProgress _gameProgress;
 
-        public SwapTilesState(Grid grid, IStateSwitcher stateSwitcher, IAnimation animation, MatchFinder matchFinder)
+        public SwapTilesState(Grid grid, IStateSwitcher stateSwitcher, IAnimation animation, MatchFinder matchFinder, GameProgress gameProgress)
         {
             _grid = grid;
             _stateSwitcher = stateSwitcher;
             _animation = animation;
             _matchFinder = matchFinder;
+            _gameProgress = gameProgress;
         }
 
         public async void Enter()
@@ -41,6 +44,7 @@ namespace GameStateMachine.States
             {
                 // play sound match
                 // spend move
+                _gameProgress.SpendMoves();
                 _stateSwitcher.SwichState<RemoveTilesState>();
             }
         }

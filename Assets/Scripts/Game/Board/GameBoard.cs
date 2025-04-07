@@ -16,6 +16,9 @@ namespace Game.Board
     public class GameBoard : MonoBehaviour
     {
         [SerializeField] private LevelConfig _levelConfig;
+
+        public LevelConfig LevelConfig => _levelConfig;
+
         [SerializeField] private TileConfig _tileConfig;
         [SerializeField] private bool isDebug = true;
         private readonly List<Tile> _tilesToRefill = new List<Tile>();
