@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
@@ -12,10 +13,12 @@ namespace UI.Menu.Levels
         {
             if (currentLevel <= 5)
             {
+                Debug.Log("Load Levels1-5");
                 await LoadLevels("Levels1-5");
             }
             else
             {
+                Debug.Log("Load Levels6-10");
                 await LoadLevels("Levels6-10");
             }
         }

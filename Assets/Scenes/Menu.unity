@@ -267,6 +267,7 @@ GameObject:
   - component: {fileID: 370397112}
   - component: {fileID: 370397111}
   - component: {fileID: 370397110}
+  - component: {fileID: 370397113}
   m_Layer: 5
   m_Name: Level 4
   m_TagString: Untagged
@@ -376,6 +377,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 370397108}
   m_CullTransparentMesh: 1
+--- !u!114 &370397113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 370397108}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39e31be9230f4a6ea62637ab7fb0d0e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _levelText: {fileID: 1148271213}
+  _levelButton: {fileID: 370397110}
 --- !u!1 &400076060
 GameObject:
   m_ObjectHideFlags: 0
@@ -655,6 +670,7 @@ GameObject:
   - component: {fileID: 615942176}
   - component: {fileID: 615942175}
   - component: {fileID: 615942174}
+  - component: {fileID: 615942177}
   m_Layer: 5
   m_Name: Level 2
   m_TagString: Untagged
@@ -764,6 +780,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 615942172}
   m_CullTransparentMesh: 1
+--- !u!114 &615942177
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 615942172}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39e31be9230f4a6ea62637ab7fb0d0e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _levelText: {fileID: 751869023}
+  _levelButton: {fileID: 615942174}
 --- !u!1 &751869021
 GameObject:
   m_ObjectHideFlags: 0
@@ -900,6 +930,56 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 751869021}
   m_CullTransparentMesh: 1
+--- !u!1 &940108855
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 940108857}
+  - component: {fileID: 940108856}
+  m_Layer: 0
+  m_Name: GameSystemScripts
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &940108856
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 940108855}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91cc81e19f194b6588eab1d9fedc59f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _levelButtons:
+  - {fileID: 1646760498}
+  - {fileID: 615942177}
+  - {fileID: 1639927912}
+  - {fileID: 370397113}
+  - {fileID: 1020957413}
+--- !u!4 &940108857
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 940108855}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1, z: 90}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1020957408
 GameObject:
   m_ObjectHideFlags: 0
@@ -912,6 +992,7 @@ GameObject:
   - component: {fileID: 1020957412}
   - component: {fileID: 1020957411}
   - component: {fileID: 1020957410}
+  - component: {fileID: 1020957413}
   m_Layer: 5
   m_Name: Level 5
   m_TagString: Untagged
@@ -1021,6 +1102,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1020957408}
   m_CullTransparentMesh: 1
+--- !u!114 &1020957413
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1020957408}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39e31be9230f4a6ea62637ab7fb0d0e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _levelText: {fileID: 1769917715}
+  _levelButton: {fileID: 1020957410}
 --- !u!1 &1148271211
 GameObject:
   m_ObjectHideFlags: 0
@@ -1256,7 +1351,10 @@ MonoBehaviour:
   parentReference:
     TypeName: DI.RootScope
   autoRun: 1
-  autoInjectGameObjects: []
+  autoInjectGameObjects:
+  - {fileID: 1245562944}
+  - {fileID: 940108855}
+  _levelSequenceView: {fileID: 940108856}
 --- !u!4 &1247233874
 Transform:
   m_ObjectHideFlags: 0
@@ -1552,6 +1650,7 @@ GameObject:
   - component: {fileID: 1639927911}
   - component: {fileID: 1639927910}
   - component: {fileID: 1639927909}
+  - component: {fileID: 1639927912}
   m_Layer: 5
   m_Name: Level 3
   m_TagString: Untagged
@@ -1661,6 +1760,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1639927907}
   m_CullTransparentMesh: 1
+--- !u!114 &1639927912
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1639927907}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39e31be9230f4a6ea62637ab7fb0d0e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _levelText: {fileID: 161123876}
+  _levelButton: {fileID: 1639927909}
 --- !u!1 &1646760493
 GameObject:
   m_ObjectHideFlags: 0
@@ -1673,6 +1786,7 @@ GameObject:
   - component: {fileID: 1646760497}
   - component: {fileID: 1646760496}
   - component: {fileID: 1646760495}
+  - component: {fileID: 1646760498}
   m_Layer: 5
   m_Name: Level 1
   m_TagString: Untagged
@@ -1782,6 +1896,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1646760493}
   m_CullTransparentMesh: 1
+--- !u!114 &1646760498
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1646760493}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39e31be9230f4a6ea62637ab7fb0d0e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _levelText: {fileID: 2038491448}
+  _levelButton: {fileID: 1646760495}
 --- !u!1 &1769917713
 GameObject:
   m_ObjectHideFlags: 0
@@ -2274,3 +2402,4 @@ SceneRoots:
   - {fileID: 400076064}
   - {fileID: 1479806207}
   - {fileID: 1247233874}
+  - {fileID: 940108857}
