@@ -1,4 +1,5 @@
-﻿using SceneLoading;
+﻿using Audio;
+using SceneLoading;
 using UI.Menu.Levels;
 using VContainer.Unity;
 
@@ -10,26 +11,26 @@ namespace UI.Menu
         private SetupLevelSequence _setupLevelSequence;
         private LevelSequenceView _levelSequenceView;
         private MenuView _menuView;
+        private AudioManager _audioManager;
 
-        public MenuEntryPoint(IAsyncSceneLoading sceneLoading, SetupLevelSequence setupLevelSequence, LevelSequenceView levelSequenceView, MenuView menuView)
+        public MenuEntryPoint(IAsyncSceneLoading sceneLoading, SetupLevelSequence setupLevelSequence, LevelSequenceView levelSequenceView, MenuView menuView, AudioManager audioManager)
         {
             _sceneLoading = sceneLoading;
             _setupLevelSequence = setupLevelSequence;
             _levelSequenceView = levelSequenceView;
             _menuView = menuView;
+            _audioManager = audioManager;
         }
 
         public async void Initialize()
         {
-            // setup level sequence
             await _setupLevelSequence.Setup(1);
-            // music menu
-            _levelSequenceView.SetupButtonsView(1);
-            // loading is done
+            _audioManager.PlayMenuMusic();
             _sceneLoading.LoadingDone(true);
-            // await animation
             await _menuView.StartAnimation();
-            // buttons enable
+            _levelSequenceView.SetupButtonsView(1);
+            
+            
         }
     }
 }

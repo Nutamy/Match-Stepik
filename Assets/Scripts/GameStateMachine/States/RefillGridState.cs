@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using Animations;
+using Audio;
 using Game.MatchTiles;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
@@ -22,10 +23,11 @@ namespace GameStateMachine.States
         private TilePool _tilePool;
         private readonly Transform _parent;
         private GameProgress _gameProgress;
+        private AudioManager _audioManager;
         
         private List<Vector2Int> _tilesToRefillPos = new List<Vector2Int>();
         public RefillGridState(Grid grid, IStateSwitcher stateSwitcher, IAnimation animation, 
-            MatchFinder matchFinder, TilePool tilePool, Transform parent, GameProgress gameProgress)
+            MatchFinder matchFinder, TilePool tilePool, Transform parent, GameProgress gameProgress, AudioManager audioManager)
         {
             _grid = grid;
             _stateSwitcher = stateSwitcher;
@@ -34,6 +36,7 @@ namespace GameStateMachine.States
             _tilePool = tilePool;
             _parent = parent;
             _gameProgress = gameProgress;
+            _audioManager= audioManager;
         }
 
         public async void Enter()
@@ -45,11 +48,13 @@ namespace GameStateMachine.States
             if (_matchFinder.CheckBoardForMatches(_grid))
             {
                 // play sound Remove tiles
+                _audioManager.PlayRemove();
                 _stateSwitcher.SwichState<RemoveTilesState>();
             }
             else
             {
                 // Play sound check game over
+                _audioManager.PlayNoMatch();
                 CheckEndGame();
             }
         }
@@ -86,6 +91,7 @@ namespace GameStateMachine.States
                 }
             }
             // play sound refill grid
+            _audioManager.PlayWhoosh();
             await UniTask.Delay(TimeSpan.FromSeconds(0.3f), _cts.IsCancellationRequested);
             _cts?.Cancel();
         }
@@ -103,6 +109,7 @@ namespace GameStateMachine.States
                     _grid.SetValue(x,y, tile);
                     _animation.Reveal(tile.gameObject, 0.2f);
                     // play sound create tiles
+                    _audioManager.PlayPop();
                     await UniTask.Delay(TimeSpan.FromSeconds(0.1f), _cts.IsCancellationRequested);
                 }
             }
@@ -113,10 +120,12 @@ namespace GameStateMachine.States
         {
             if (_gameProgress.CheckGoalScore())
             {
+                _audioManager.PlayWin();
                 _stateSwitcher.SwichState<WinState>();
             }
             else if (_gameProgress.Moves <= 0)
             {
+                _audioManager.PlayLose();
                 _stateSwitcher.SwichState<LoseState>();
             }
             else
