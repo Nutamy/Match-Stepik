@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using Animations;
+using Audio;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
@@ -19,6 +20,7 @@ namespace UI.Menu
         private CancellationTokenSource _cts;
         // audio
         private IAnimation _animation;
+        private AudioManager _audioManager;
 
         public async UniTask StartAnimation()
         {
@@ -61,10 +63,11 @@ namespace UI.Menu
                 //rectTransform.anchoredPosition = new Vector2(originalPos.x, -1000f);
                 
                 buttonObj.SetActive(true);
+                
                 // Анимируем возврат к оригинальной позиции
                 //rectTransform.DOAnchorPos(originalPos, 0.6f).SetEase(Ease.OutBack);
                 await _animation.Reveal(buttonObj, 0.1f);
-
+                _audioManager.PlayPop();
                 await UniTask.Delay(TimeSpan.FromSeconds(delayBetweenButtons), cancellationToken: _cts.Token);
             }
         }
@@ -72,9 +75,10 @@ namespace UI.Menu
 
 
         [Inject]
-        private void Construct(IAnimation animation)
+        private void Construct(IAnimation animation, AudioManager audioManager)
         {
             _animation = animation;
+            _audioManager = audioManager;
         }
     }
 }

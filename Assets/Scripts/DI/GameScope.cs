@@ -20,6 +20,7 @@ namespace DI
         [SerializeField] private EndGamePanelView _endGame;
         protected override void Configure(IContainerBuilder builder)
         {
+            builder.RegisterEntryPoint<EntryPoint.EntryPoint>();
             builder.Register<Grid>(Lifetime.Singleton);
             builder.Register<GameDebug>(Lifetime.Singleton);
             builder.RegisterInstance(_gameBoard);

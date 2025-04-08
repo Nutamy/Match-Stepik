@@ -15,33 +15,13 @@ namespace Game.Board
 {
     public class GameBoard : MonoBehaviour
     {
-        [SerializeField] private LevelConfig _levelConfig;
-
-        public LevelConfig LevelConfig => _levelConfig;
-
-        [SerializeField] private TileConfig _tileConfig;
-        [SerializeField] private bool isDebug = true;
         private readonly List<Tile> _tilesToRefill = new List<Tile>();
         
         private Grid _grid;
-        private BlankTileSetup _blankTileSetup;
         private TilePool _tilePool;
-        private SetupCamera _setupCamera;
-        private GameDebug _gameDebug;
         private IAnimation _animation;
         private MatchFinder _matchFinder;
-        
-
-        private void Awake()
-        {
-            _grid.SetupGrid(_levelConfig.Width,_levelConfig.Height);
-            _blankTileSetup.SetupBlanks(_levelConfig);
-            _setupCamera.SetCamera(_grid.Width, _grid.Height, false);
-            if (isDebug)
-            {
-                _gameDebug.ShowDebug(transform);
-            }
-        }
+        private BlankTileSetup _blankTileSetup;
 
 
         private void ClickTest()
@@ -109,15 +89,13 @@ namespace Game.Board
         }
 
         [Inject]
-        private void Construct(Grid grid, SetupCamera setupCamera, TilePool tilePool, GameDebug gameDebug, BlankTileSetup blankTileSetup, IAnimation animation, MatchFinder matchFinder)
+        private void Construct(Grid grid, TilePool tilePool, IAnimation animation, MatchFinder matchFinder, BlankTileSetup blankTileSetup)
         {
             _grid = grid;
-            _setupCamera = setupCamera;
             _tilePool = tilePool;
-            _gameDebug = gameDebug;
-            _blankTileSetup = blankTileSetup;
             _animation = animation;
             _matchFinder = matchFinder;
+            _blankTileSetup = blankTileSetup;
         }
     }
 }
