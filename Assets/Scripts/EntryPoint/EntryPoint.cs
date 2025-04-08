@@ -6,6 +6,7 @@ using Game.Score;
 using Game.Tiles;
 using GameStateMachine;
 using Levels;
+using SceneLoading;
 using UnityEngine;
 using VContainer;
 using Grid = Game.GridSystem.Grid;
@@ -24,15 +25,17 @@ namespace EntryPoint
         private GameProgress _gameProgress;
         private ScoreCalculator _scoreCalculator;
         private AudioManager _audioManager;
+        private IAsyncSceneLoading _sceneLoading;
 
         private void Start()
         {
             _stateMachine = new StateMachine(_gameBoard, _grid, _animation, _matchFinder, _tilePool, _gameProgress, _scoreCalculator, _audioManager);
             _gameProgress.LoadLevelConfig(_gameBoard.LevelConfig.GoalScore, _gameBoard.LevelConfig.Moves);
+            _sceneLoading.LoadingDone(true);
         }
 
         [Inject]
-        private void Construct(Grid grid, IAnimation animation, MatchFinder matchFinder, TilePool tilePool, GameProgress gameProgress, ScoreCalculator scoreCalculator, AudioManager audioManager)
+        private void Construct(Grid grid, IAnimation animation, MatchFinder matchFinder, TilePool tilePool, GameProgress gameProgress, ScoreCalculator scoreCalculator, AudioManager audioManager, IAsyncSceneLoading sceneLoading)
         {
             _grid = grid;
             _animation = animation;
@@ -41,6 +44,7 @@ namespace EntryPoint
             _gameProgress = gameProgress;
             _scoreCalculator = scoreCalculator;
             _audioManager = audioManager;
+            _sceneLoading= sceneLoading;
         }
     }
 }

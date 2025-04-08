@@ -12,7 +12,8 @@ namespace UI.Menu
         [SerializeField] private TMP_Text _levelText;
         [SerializeField] private Button _levelButton;
         public int LevelNumber { get; private set; }
-        
+
+        private StartGame _startGame;
         // start
         private SetupLevelSequence _setupLevelSequence;
 
@@ -43,13 +44,15 @@ namespace UI.Menu
 
         private void StartLevelButtonClick()
         {
+            _startGame.Start(_setupLevelSequence.CurrentLevelSequence.LevelSequence[LevelNumber - 1]);
             Debug.Log($"{_setupLevelSequence.CurrentLevelSequence.LevelSequence[LevelNumber - 1]} level has been started");
         }
 
         [Inject]
-        private void Construct(SetupLevelSequence setupLevelSequence)
+        private void Construct(SetupLevelSequence setupLevelSequence, StartGame startGame)
         {
             _setupLevelSequence = setupLevelSequence;
+            _startGame = startGame;
         }
     }
 }

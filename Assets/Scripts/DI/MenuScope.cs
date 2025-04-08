@@ -14,6 +14,7 @@ namespace DI
         {
             builder.RegisterEntryPoint<MenuEntryPoint>();
             builder.Register<SetupLevelSequence>(Lifetime.Singleton);
+            builder.Register<StartGame>(Lifetime.Singleton);
             builder.RegisterInstance(_levelSequenceView);
             builder.RegisterInstance(_menuView);
         }
