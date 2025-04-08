@@ -26,4 +26,4 @@ MonoBehaviour:
   _goalScore: 500
   _moves: 10
   _tileSets: 0
-  _levelNumber: 1
+  _levelNumber: 7

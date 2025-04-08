@@ -9,11 +9,13 @@ namespace DI
     public class MenuScope : LifetimeScope
     {
         [SerializeField] private LevelSequenceView _levelSequenceView;
+        [SerializeField] private MenuView _menuView;
         protected override void Configure(IContainerBuilder builder)
         {
             builder.RegisterEntryPoint<MenuEntryPoint>();
             builder.Register<SetupLevelSequence>(Lifetime.Singleton);
             builder.RegisterInstance(_levelSequenceView);
+            builder.RegisterInstance(_menuView);
         }
     }
 }
