@@ -4,9 +4,11 @@ using System.Threading;
 using Animations;
 using Audio;
 using Cysharp.Threading.Tasks;
+using Game.Board;
 using Game.MatchTiles;
 using Game.Score;
 using Game.Tiles;
+using UI;
 using Grid = Game.GridSystem.Grid;
 namespace GameStateMachine.States
 {
@@ -20,8 +22,10 @@ namespace GameStateMachine.States
         private GameProgress _gameProgress;
         private ScoreCalculator _scoreCalculator;
         private AudioManager _audioManager;
+        private FXPool _fxPool;
+        private GameBoard _gameBoard;
 
-        public RemoveTilesState(Grid grid, IStateSwitcher stateSwitcher, IAnimation animation, MatchFinder matchFinder, ScoreCalculator scoreCalculator, AudioManager audioManager)
+        public RemoveTilesState(Grid grid, IStateSwitcher stateSwitcher, IAnimation animation, MatchFinder matchFinder, ScoreCalculator scoreCalculator, AudioManager audioManager, FXPool fxPool, GameBoard gameBoard)
         {
             _grid = grid;
             _stateSwitcher = stateSwitcher;
@@ -29,6 +33,8 @@ namespace GameStateMachine.States
             _matchFinder = matchFinder;
             _scoreCalculator = scoreCalculator;
             _audioManager = audioManager;
+            _fxPool = fxPool;
+            _gameBoard = gameBoard;
         }
 
         public async void Enter()
@@ -61,6 +67,7 @@ namespace GameStateMachine.States
                 grid.SetValue(position.x, position.y, null);
                 await _animation.HideTile(tile.gameObject);
                 // FX
+                _fxPool.GetFXFromPool(tile.transform.position, _gameBoard.transform);
             }
             _cts.Cancel();
         }

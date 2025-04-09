@@ -9,6 +9,9 @@ namespace ResourcesLoading
         [SerializeField] private GameObject _tileBlank;
         [SerializeField] private TileConfig _blankConfig;
         [SerializeField] private TileSetConfig _tileSetConfig;
+        [SerializeField] private GameObject _FXPrefab;
+
+        public GameObject FXPrefab => _FXPrefab;
 
         public GameObject TilePrefab => _tilePrefab;
         public TileSetConfig TileSetConfig => _tileSetConfig;

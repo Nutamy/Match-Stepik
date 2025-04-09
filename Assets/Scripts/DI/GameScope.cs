@@ -6,6 +6,7 @@ using Game.Tiles;
 using Game.Utils;
 using ResourcesLoading;
 using UI;
+using UI.Menu;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -18,6 +19,7 @@ namespace DI
         [SerializeField] private GameBoard _gameBoard;
         [SerializeField] private GameResourcesLoader _resourcesLoader;
         [SerializeField] private EndGamePanelView _endGame;
+        [SerializeField] private GameProgressView _gameProgress;
         protected override void Configure(IContainerBuilder builder)
         {
             builder.RegisterEntryPoint<EntryPoint.EntryPoint>();
@@ -26,6 +28,8 @@ namespace DI
             builder.RegisterInstance(_gameBoard);
             builder.RegisterInstance(_resourcesLoader);
             builder.RegisterInstance(_endGame);
+            builder.RegisterInstance(_gameProgress);
+            builder.Register<FXPool>(Lifetime.Singleton);
             builder.Register<BlankTileSetup>(Lifetime.Singleton);
             builder.Register<SetupCamera>(Lifetime.Singleton);
             builder.Register<TilePool>(Lifetime.Singleton);

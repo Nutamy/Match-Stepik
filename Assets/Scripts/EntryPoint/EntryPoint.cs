@@ -39,11 +39,12 @@ namespace EntryPoint
         private GameDebug _gameDebug;
         private GameResourcesLoader _gameResourcesLoader;
         private SetupCamera _setupCamera;
+        private FXPool _fxPool;
 
         private bool _isDebuging;
         //FX pool
 
-        public EntryPoint(BlankTileSetup blankTileSetup, GameBoard gameBoard, GameData gameData, Grid grid, IAnimation animation, MatchFinder matchFinder, TilePool tilePool, GameProgress gameProgress, ScoreCalculator scoreCalculator, AudioManager audioManager, IAsyncSceneLoading sceneLoading, EndGamePanelView endGame, GameDebug gameDebug, GameResourcesLoader gameResourcesLoader, SetupCamera setupCamera)
+        public EntryPoint(BlankTileSetup blankTileSetup, GameBoard gameBoard, GameData gameData, Grid grid, IAnimation animation, MatchFinder matchFinder, TilePool tilePool, GameProgress gameProgress, ScoreCalculator scoreCalculator, AudioManager audioManager, IAsyncSceneLoading sceneLoading, EndGamePanelView endGame, GameDebug gameDebug, GameResourcesLoader gameResourcesLoader, SetupCamera setupCamera, FXPool fxPool)
         {
             _blankTileSetup = blankTileSetup;
             _gameBoard = gameBoard;
@@ -60,6 +61,7 @@ namespace EntryPoint
             _gameDebug = gameDebug;
             _gameResourcesLoader = gameResourcesLoader;
             _setupCamera = setupCamera;
+            _fxPool = fxPool;
         }
 
         public void Initialize()
@@ -74,7 +76,7 @@ namespace EntryPoint
             // await resources
             _blankTileSetup.SetupBlanks(_levelConfig);
             _setupCamera.SetCamera(_grid.Width, _grid.Height, true);
-            _stateMachine = new StateMachine(_gameBoard, _grid, _animation, _matchFinder, _tilePool, _gameProgress, _scoreCalculator, _audioManager, _endGame);
+            _stateMachine = new StateMachine(_gameBoard, _grid, _animation, _matchFinder, _tilePool, _gameProgress, _scoreCalculator, _audioManager, _endGame, _fxPool);
             _sceneLoading.LoadingDone(true);
             
         }

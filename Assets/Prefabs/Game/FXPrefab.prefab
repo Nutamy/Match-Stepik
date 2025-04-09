@@ -14841,7 +14841,7 @@ GameObject:
   - component: {fileID: 223767956318549992}
   - component: {fileID: 8606991403447526743}
   - component: {fileID: 3982517062933633820}
-  - component: {fileID: 5736373881957320409}
+  - component: {fileID: 7518931364110345412}
   m_Layer: 0
   m_Name: FXPrefab
   m_TagString: Untagged
@@ -19585,7 +19585,7 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     vectorLabel1_3: W
---- !u!114 &5736373881957320409
+--- !u!114 &7518931364110345412
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -19594,6 +19594,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 7834839563654822937}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e599e1d934984658b9536e92bf519385, type: 3}
+  m_Script: {fileID: 11500000, guid: 71c217ebef3c415e8bf38b7545e53637, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

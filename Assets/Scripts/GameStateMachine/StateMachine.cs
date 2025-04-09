@@ -25,8 +25,9 @@ namespace GameStateMachine
         private ScoreCalculator _scoreCalculator;
         private AudioManager _audioManager;
         private EndGamePanelView _endGame;
+        private FXPool _fxPool;
 
-        public StateMachine(GameBoard gameBoard, Grid grid, IAnimation animation, MatchFinder matchFinder, TilePool tilePool, GameProgress gameProgress, ScoreCalculator scoreCalculator, AudioManager audioManager, EndGamePanelView endGame)
+        public StateMachine(GameBoard gameBoard, Grid grid, IAnimation animation, MatchFinder matchFinder, TilePool tilePool, GameProgress gameProgress, ScoreCalculator scoreCalculator, AudioManager audioManager, EndGamePanelView endGame, FXPool fxPool)
         {
             _gameBoard = gameBoard;
             _grid = grid;
@@ -37,12 +38,13 @@ namespace GameStateMachine
             _scoreCalculator = scoreCalculator;
             _audioManager = audioManager;
             _endGame = endGame;
+            _fxPool = fxPool;
             _states = new List<IState>()
             {
                 new PrepareState(this, _gameBoard),
                 new PlayerTurnState(_grid, this, _animation, _audioManager),
                 new SwapTilesState(_grid, this, _animation, _matchFinder, _gameProgress, _audioManager),
-                new RemoveTilesState(_grid, this, _animation, _matchFinder, _scoreCalculator, _audioManager),
+                new RemoveTilesState(_grid, this, _animation, _matchFinder, _scoreCalculator, _audioManager, _fxPool, _gameBoard),
                 new RefillGridState(_grid, this, _animation, _matchFinder, _tilePool, _gameBoard.transform, _gameProgress, _audioManager),
                 new WinState(_endGame),
                 new LoseState(_endGame)
