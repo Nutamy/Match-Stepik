@@ -25,5 +25,5 @@ MonoBehaviour:
   _height: 10
   _goalScore: 500
   _moves: 10
-  _tileSets: 0
+  _tileSets: 1
   _levelNumber: 2

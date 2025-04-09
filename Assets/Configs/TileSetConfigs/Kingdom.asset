@@ -13,8 +13,7 @@ MonoBehaviour:
   m_Name: Kingdom
   m_EditorClassIdentifier: 
   _set:
-  - {fileID: 11400000, guid: f051ac5d6e5b67645a698ad88e203048, type: 2}
-  - {fileID: 11400000, guid: 02fe5bf2fec4c7c4aa42ff29191397d6, type: 2}
-  - {fileID: 11400000, guid: 6aeb367c68608cc42a9b4795f9e7984d, type: 2}
-  - {fileID: 11400000, guid: 747a11040a3050e43b2abdc1b7f6652c, type: 2}
-  - {fileID: 11400000, guid: 841d4c0dc81cdd14ebd2b3454cad7958, type: 2}
+  - {fileID: 11400000, guid: b37a271f3c04599499840dfd649c9b38, type: 2}
+  - {fileID: 11400000, guid: 350e66a828dca594e9cd6f7db10df923, type: 2}
+  - {fileID: 11400000, guid: c9a6c5b5a7fc78945b0be6ef9304bbb6, type: 2}
+  - {fileID: 11400000, guid: 967a050d096b72c44899a0b8acb3480e, type: 2}

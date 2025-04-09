@@ -73,7 +73,7 @@ namespace EntryPoint
             _gameProgress.LoadLevelConfig(_levelConfig.GoalScore, _levelConfig.Moves);
             // await resources
             _blankTileSetup.SetupBlanks(_levelConfig);
-            _setupCamera.SetCamera(_grid.Width, _grid.Height, false);
+            _setupCamera.SetCamera(_grid.Width, _grid.Height, true);
             _stateMachine = new StateMachine(_gameBoard, _grid, _animation, _matchFinder, _tilePool, _gameProgress, _scoreCalculator, _audioManager, _endGame);
             _sceneLoading.LoadingDone(true);
             

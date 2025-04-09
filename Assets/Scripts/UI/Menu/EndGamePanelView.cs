@@ -25,7 +25,7 @@ namespace UI
         private bool _isWinCondition;
 
         private readonly string _win = "Victory!\nYou have won!";
-        private readonly string _lose = "Defeat!\nYou have lost!";
+        private readonly string _lose = "You have lost\nTry again!";
 
         private void OnEnable()
         {

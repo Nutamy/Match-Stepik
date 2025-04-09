@@ -30,6 +30,7 @@ namespace Levels
     public enum TileSets
     {
         Kingdom,
+        Setkz01,
         Gem
     }
 }
