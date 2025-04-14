@@ -44,8 +44,18 @@ namespace UI.Menu
 
         private void StartLevelButtonClick()
         {
-            Debug.Log("StartLevelButtonClick" + (LevelNumber - 1) + " " +  _setupLevelSequence.CurrentLevelSequence.LevelSequence);
-            _startGame.Start(_setupLevelSequence.CurrentLevelSequence.LevelSequence[LevelNumber - 1]);
+            
+            Debug.Log("StartLevelButtonClick ->" + (LevelNumber - 1) + "\nCount LevelSequence = " +  _setupLevelSequence.CurrentLevelSequence.LevelSequence.Count);
+            // Находим индекс уровня в текущем наборе уровней
+            int levelIndex = (LevelNumber - 1) % 5; // Для Levels1-5 или Levels6-10
+
+            // Логгируем информацию
+            Debug.Log("StartLevelButtonClick ->" + levelIndex + "\nCount LevelSequence = " + _setupLevelSequence.CurrentLevelSequence.LevelSequence.Count);
+
+            // Загружаем уровень по индексу
+            _startGame.Start(_setupLevelSequence.CurrentLevelSequence.LevelSequence[levelIndex]);
+            
+            //_startGame.Start(_setupLevelSequence.CurrentLevelSequence.LevelSequence[LevelNumber - 1]);
             Debug.Log($"{_setupLevelSequence.CurrentLevelSequence.LevelSequence[LevelNumber - 1]} level has been started");
         }
 

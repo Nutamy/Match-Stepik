@@ -18,6 +18,12 @@ namespace Levels
         [SerializeField] private TileSets _tileSets;
         [SerializeField] private int _levelNumber;
 
+        [Header("View")] 
+        [SerializeField] private GameObject backGround;
+        [SerializeField] private Font Font;
+        [SerializeField] private AudioSource Music;
+        
+
         public List<BlankTile> BlankTilesLayout => _blankTilesLayout;
         public int Width => _width;
         public int Height => _height;
