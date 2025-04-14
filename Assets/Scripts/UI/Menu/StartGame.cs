@@ -24,6 +24,7 @@ namespace UI.Menu
         {
             _cts = new CancellationTokenSource();
             _gameData.SetCurrentLevelConfig(levelConfig);
+            //_gameData.SetCurrentLevelConfig(5);
             _audioManager.StopMusic();
             _audioManager.PlayStopMusic();
             await _sceneLoading.UnLoadAsync(Scenes.MENU);

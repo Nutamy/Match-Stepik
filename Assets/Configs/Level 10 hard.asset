@@ -10,24 +10,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ccfcf70de0314a9ea919c53c84192366, type: 3}
-  m_Name: Level 4
+  m_Name: Level 10 hard
   m_EditorClassIdentifier: 
   _blankTilesLayout:
-  - xPosition: 0
-    yPosition: 3
   - xPosition: 2
     yPosition: 1
   - xPosition: 2
-    yPosition: 5
-  - xPosition: 4
-    yPosition: 1
-  - xPosition: 4
-    yPosition: 5
+    yPosition: 7
+  - xPosition: 3
+    yPosition: 2
+  - xPosition: 3
+    yPosition: 6
+  - xPosition: 5
+    yPosition: 2
+  - xPosition: 5
+    yPosition: 6
   - xPosition: 6
-    yPosition: 3
+    yPosition: 1
+  - xPosition: 6
+    yPosition: 7
   _width: 7
   _height: 7
-  _goalScore: 20
-  _moves: 12
+  _goalScore: 1000
+  _moves: 25
   _tileSets: 0
-  _levelNumber: 4
+  _levelNumber: 10

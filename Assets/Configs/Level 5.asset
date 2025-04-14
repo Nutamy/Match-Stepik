@@ -13,17 +13,25 @@ MonoBehaviour:
   m_Name: Level 5
   m_EditorClassIdentifier: 
   _blankTilesLayout:
-  - xPosition: 4
+  - xPosition: 0
+    yPosition: 0
+  - xPosition: 0
+    yPosition: 6
+  - xPosition: 2
+    yPosition: 2
+  - xPosition: 2
     yPosition: 4
   - xPosition: 4
-    yPosition: 5
-  - xPosition: 5
+    yPosition: 2
+  - xPosition: 4
     yPosition: 4
-  - xPosition: 5
-    yPosition: 5
-  _width: 10
-  _height: 10
-  _goalScore: 500
-  _moves: 10
+  - xPosition: 6
+    yPosition: 0
+  - xPosition: 6
+    yPosition: 6
+  _width: 7
+  _height: 7
+  _goalScore: 20
+  _moves: 25
   _tileSets: 0
   _levelNumber: 5

@@ -14,10 +14,11 @@ namespace UI.Menu.Levels
 
         private void OnValidate()
         {
-            if (_levelSequence.Count != 5)
-            {
-                throw new ArgumentOutOfRangeException("Levels sequence must contain 5 elements");
-            }
+            //if (_levelSequence.Count != 5)
+            //{
+                //throw new ArgumentOutOfRangeException("Levels sequence must contain 5 elements");
+            //}
+            Debug.Log("OnValidate +-+-+-+-+-+-+-");
         }
     }
 }

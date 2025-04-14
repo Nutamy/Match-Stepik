@@ -44,6 +44,7 @@ namespace UI.Menu
 
         private void StartLevelButtonClick()
         {
+            Debug.Log("StartLevelButtonClick" + (LevelNumber - 1) + " " +  _setupLevelSequence.CurrentLevelSequence.LevelSequence);
             _startGame.Start(_setupLevelSequence.CurrentLevelSequence.LevelSequence[LevelNumber - 1]);
             Debug.Log($"{_setupLevelSequence.CurrentLevelSequence.LevelSequence[LevelNumber - 1]} level has been started");
         }

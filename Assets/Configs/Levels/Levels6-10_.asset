@@ -10,14 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2d8abbcc20034c87b9ee3d10f379c0df, type: 3}
-  m_Name: Levels1-5
+  m_Name: Levels6-10_
   m_EditorClassIdentifier: 
   _levelSequence:
-  - {fileID: 11400000, guid: 0499699207fba1947923158bf12d8dc3, type: 2}
-  - {fileID: 11400000, guid: 763da79102e26b148a1f30c89c35e245, type: 2}
-  - {fileID: 11400000, guid: 04928b7d31982e946a3e61d54aba0807, type: 2}
-  - {fileID: 11400000, guid: d432455386bcf8b408dd3092a13219cd, type: 2}
-  - {fileID: 11400000, guid: 8a8df701c2cd0fe47977a375cdae15ad, type: 2}
   - {fileID: 11400000, guid: 3c8a0edd190edab42847e60d18a5a037, type: 2}
   - {fileID: 11400000, guid: 908d9bb38bcb457438aa33bacde70b22, type: 2}
   - {fileID: 11400000, guid: 774e3f2c28b9f2242a0f556c8a4b0d89, type: 2}
