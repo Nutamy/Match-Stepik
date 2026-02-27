@@ -16,11 +16,16 @@ namespace UI.Menu.Levels
                 Debug.Log("Load Levels1-5");
                 await LoadLevels("Levels1-5");
             }
-            else
+            else if (currentLevel <= 10)
             {
                 Debug.Log("Load Levels6-10");
                 await LoadLevels("Levels6-10");
-            }
+            } 
+            else if (currentLevel <= 15)
+            {
+                Debug.Log("Load Levels6-10");
+                await LoadLevels("Levels11-15");
+            } 
         }
 
         private async UniTask LoadLevels(string key)

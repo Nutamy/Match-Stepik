@@ -23,7 +23,10 @@ MonoBehaviour:
     yPosition: 5
   _width: 7
   _height: 7
-  _goalScore: 500
+  _goalScore: 20
   _moves: 10
   _tileSets: 0
   _levelNumber: 10
+  backGround: {fileID: 0}
+  Font: {fileID: 0}
+  Music: {fileID: 0}

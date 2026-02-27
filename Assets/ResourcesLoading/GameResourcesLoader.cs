@@ -5,6 +5,17 @@ namespace ResourcesLoading
 {
     public class GameResourcesLoader : MonoBehaviour
     {
+        // public GameObject TilePrefab { get; private set; }
+        // public GameObject BlankPrefab { get; private set; }
+        // public GameObject BlankConfig { get; private set; }
+        // public GameObject TileSetConfig { get; private set; }
+        // public GameObject BackgroundTilePrefab { get; private set; }
+        // public GameObject FXPrefab { get; private set; }
+        // public GameObject DarkTile { get; private set; }
+        // public GameObject LightTile { get; private set; }
+        // to fix
+        
+        
         [SerializeField] private GameObject _tilePrefab;
         [SerializeField] private GameObject _tileBlank;
         [SerializeField] private TileConfig _blankConfig;
@@ -12,7 +23,7 @@ namespace ResourcesLoading
         [SerializeField] private GameObject _FXPrefab;
 
         public GameObject FXPrefab => _FXPrefab;
-
+        
         public GameObject TilePrefab => _tilePrefab;
         public TileSetConfig TileSetConfig => _tileSetConfig;
         public GameObject TileBlank => _tileBlank;

@@ -1,10 +1,14 @@
-﻿using Game.Board;
+﻿using Animations;
+using Audio;
+using Data;
+using Game.Board;
 using Game.GridSystem;
 using Game.MatchTiles;
 using Game.Score;
 using Game.Tiles;
 using Game.Utils;
 using ResourcesLoading;
+using SceneLoading;
 using UI;
 using UI.Menu;
 using UnityEngine;
@@ -37,6 +41,11 @@ namespace DI
             builder.Register<GameProgress>(Lifetime.Singleton);
             builder.Register<ScoreCalculator>(Lifetime.Singleton);
             builder.Register<EndGame>(Lifetime.Singleton);
+
+            builder.Register<GameData>(Lifetime.Singleton);
+            builder.Register<AudioManager>(Lifetime.Singleton);
+            //builder.Register<IAnimation, YourAnimationClass>(Lifetime.Singleton); // Замени YourAnimationClass на свой класс анимаций
+            //builder.Register<IAsyncSceneLoading, YourSceneLoader>(Lifetime.Singleton); // Аналогично для загрузки сцен
         }
     }
 }
