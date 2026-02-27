@@ -2022,8 +2022,23 @@ MonoBehaviour:
   _tilePrefab: {fileID: 5423063166238967511, guid: 10244ab7b9af8a7449e9317049bac697, type: 3}
   _tileBlank: {fileID: 5423063166238967511, guid: 19f649bc93081e74aa7cd90e72331270, type: 3}
   _blankConfig: {fileID: 11400000, guid: da11784d24ff73e4facf8bed60233ae9, type: 2}
-  _tileSetConfig: {fileID: 11400000, guid: 53cc1e4e578c92947ae11c5287145972, type: 2}
+  _tileSetConfig: {fileID: 11400000, guid: e0e9580a726580f47bda417a161910b9, type: 2}
   _FXPrefab: {fileID: 7834839563654822937, guid: d266e306f14de0f418bfbc2c78a870ae, type: 3}
+  _allTileSets:
+  - Type: 1
+    Config: {fileID: 11400000, guid: e0e9580a726580f47bda417a161910b9, type: 2}
+  - Type: 2
+    Config: {fileID: 11400000, guid: 0579df750aee48a47901415e064f6dcd, type: 2}
+  - Type: 3
+    Config: {fileID: 11400000, guid: 7f0ac162620b4d84d9aac0b07356f00f, type: 2}
+  - Type: 4
+    Config: {fileID: 11400000, guid: 1e91c3912e44da3428bbeb172ac1fc69, type: 2}
+  - Type: 5
+    Config: {fileID: 11400000, guid: 38c6d6bbf9f5a8645b8e41edbca8cd94, type: 2}
+  - Type: 6
+    Config: {fileID: 11400000, guid: a68da6c7812ee0f42ad9f24bcf95b3d3, type: 2}
+  - Type: 7
+    Config: {fileID: 11400000, guid: 53cc1e4e578c92947ae11c5287145972, type: 2}
 --- !u!4 &1183670101
 Transform:
   m_ObjectHideFlags: 0

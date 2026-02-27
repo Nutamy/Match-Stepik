@@ -13,17 +13,41 @@ MonoBehaviour:
   m_Name: Level 7
   m_EditorClassIdentifier: 
   _blankTilesLayout:
-  - xPosition: 7
-    yPosition: 7
-  - xPosition: 4
-    yPosition: 3
-  - xPosition: 5
+  - xPosition: 0
+    yPosition: 0
+  - xPosition: 0
     yPosition: 2
-  - xPosition: 5
-    yPosition: 1
-  _width: 10
-  _height: 10
-  _goalScore: 10
-  _moves: 10
-  _tileSets: 1
+  - xPosition: 0
+    yPosition: 4
+  - xPosition: 0
+    yPosition: 6
+  - xPosition: 0
+    yPosition: 8
+  - xPosition: 7
+    yPosition: 0
+  - xPosition: 7
+    yPosition: 2
+  - xPosition: 7
+    yPosition: 4
+  - xPosition: 7
+    yPosition: 6
+  - xPosition: 7
+    yPosition: 8
+  - xPosition: 2
+    yPosition: 0
+  - xPosition: 4
+    yPosition: 0
+  - xPosition: 6
+    yPosition: 0
+  - xPosition: 2
+    yPosition: 8
+  - xPosition: 4
+    yPosition: 8
+  - xPosition: 6
+    yPosition: 8
+  _width: 8
+  _height: 9
+  _goalScore: 8000
+  _moves: 120
+  _tileSets: 4
   _levelNumber: 7

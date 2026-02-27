@@ -10,11 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bbcc609d7eb44144a5205b2e0a176d78, type: 3}
-  m_Name: Setkz 05
+  m_Name: Setkz04
   m_EditorClassIdentifier: 
   _set:
   - {fileID: 11400000, guid: b37a271f3c04599499840dfd649c9b38, type: 2}
   - {fileID: 11400000, guid: 350e66a828dca594e9cd6f7db10df923, type: 2}
   - {fileID: 11400000, guid: c9a6c5b5a7fc78945b0be6ef9304bbb6, type: 2}
   - {fileID: 11400000, guid: 967a050d096b72c44899a0b8acb3480e, type: 2}
-  - {fileID: 11400000, guid: 4e46d56f3cf675847a22b6794d0ae052, type: 2}

@@ -13,17 +13,17 @@ MonoBehaviour:
   m_Name: Level 3
   m_EditorClassIdentifier: 
   _blankTilesLayout:
+  - xPosition: 3
+    yPosition: 3
   - xPosition: 4
+    yPosition: 3
+  - xPosition: 3
     yPosition: 4
   - xPosition: 4
-    yPosition: 5
-  - xPosition: 5
     yPosition: 4
-  - xPosition: 5
-    yPosition: 5
-  _width: 7
-  _height: 7
-  _goalScore: 10
-  _moves: 10
+  _width: 8
+  _height: 8
+  _goalScore: 2000
+  _moves: 22
   _tileSets: 1
   _levelNumber: 3

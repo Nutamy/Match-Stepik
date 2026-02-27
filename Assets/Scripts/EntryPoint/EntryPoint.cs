@@ -71,6 +71,9 @@ namespace EntryPoint
             {
                 _gameDebug.ShowDebug(_gameBoard.transform);
             }
+
+            _tilePool.SetCurrentLevelData(_levelConfig);
+
             _grid.SetupGrid(_levelConfig.Width, _levelConfig.Height);
             _gameProgress.LoadLevelConfig(_levelConfig.GoalScore, _levelConfig.Moves);
             // await resources

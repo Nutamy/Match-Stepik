@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Levels;
 using ResourcesLoading;
+using System.Collections.Generic;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -11,6 +12,22 @@ namespace Game.Tiles
         private List<Tile> _tilePool = new List<Tile>();
         private IObjectResolver _objectResolver;
         private GameResourcesLoader _resourcesLoader;
+        private TileSetConfig _currentActiveSet;
+
+        public void SetCurrentLevelData(LevelConfig levelConfig)
+        {
+            _currentActiveSet = _resourcesLoader.GetTileSet(levelConfig.TileSets);
+        }
+
+        private TileConfig GetRandomTileConfig()
+        {
+            if (_currentActiveSet == null)
+            {
+                Debug.LogError("Current Active Set is null! Забыли вызвать SetCurrentLevelData?");
+                return null;
+            }
+            return _currentActiveSet.Set[Random.Range(0, _currentActiveSet.Set.Count)];
+        }
 
         public TilePool(IObjectResolver objectResolver, GameResourcesLoader resourcesLoader)
         {
@@ -50,7 +67,7 @@ namespace Game.Tiles
             return tile;
         }
 
-        private TileConfig GetRandomTileConfig() =>
-            _resourcesLoader.TileSetConfig.Set[Random.Range(0, _resourcesLoader.TileSetConfig.Set.Count)];
+        //private TileConfig GetRandomTileConfig() =>
+        //    _resourcesLoader.TileSetConfig.Set[Random.Range(0, _resourcesLoader.TileSetConfig.Set.Count)];
     }
 }

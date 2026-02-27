@@ -981,6 +981,21 @@ MonoBehaviour:
     m_Scale: 1
     m_AtlasIndex: 0
     m_ClassDefinitionType: 0
+  - m_Index: 73
+    m_Metrics:
+      m_Width: 42.71875
+      m_Height: 70.40625
+      m_HorizontalBearingX: 2.640625
+      m_HorizontalBearingY: 54.84375
+      m_HorizontalAdvance: 47.984375
+    m_GlyphRect:
+      m_X: 273
+      m_Y: 191
+      m_Width: 44
+      m_Height: 71
+    m_Scale: 1
+    m_AtlasIndex: 0
+    m_ClassDefinitionType: 0
   m_CharacterTable:
   - m_ElementType: 1
     m_Unicode: 32
@@ -1186,6 +1201,10 @@ MonoBehaviour:
     m_Unicode: 100
     m_GlyphIndex: 70
     m_Scale: 1
+  - m_ElementType: 1
+    m_Unicode: 103
+    m_GlyphIndex: 73
+    m_Scale: 1
   m_AtlasTextures:
   - {fileID: -5430361431177943873}
   m_AtlasTextureIndex: 0
@@ -1389,6 +1408,10 @@ MonoBehaviour:
     m_Y: 274
     m_Width: 67
     m_Height: 91
+  - m_X: 263
+    m_Y: 181
+    m_Width: 63
+    m_Height: 90
   m_FreeGlyphRects:
   - m_X: 47
     m_Y: 0
@@ -1502,10 +1525,6 @@ MonoBehaviour:
     m_Y: 90
     m_Width: 50
     m_Height: 1
-  - m_X: 252
-    m_Y: 181
-    m_Width: 771
-    m_Height: 3
   - m_X: 187
     m_Y: 460
     m_Width: 16
@@ -1538,30 +1557,38 @@ MonoBehaviour:
     m_Y: 274
     m_Width: 52
     m_Height: 3
-  - m_X: 263
-    m_Y: 181
-    m_Width: 760
-    m_Height: 93
-  - m_X: 312
-    m_Y: 0
-    m_Width: 711
-    m_Height: 274
   - m_X: 312
     m_Y: 365
     m_Width: 711
     m_Height: 658
-  - m_X: 319
-    m_Y: 0
-    m_Width: 704
-    m_Height: 1023
   - m_X: 252
     m_Y: 365
     m_Width: 771
     m_Height: 4
+  - m_X: 252
+    m_Y: 181
+    m_Width: 11
+    m_Height: 3
+  - m_X: 263
+    m_Y: 271
+    m_Width: 760
+    m_Height: 3
+  - m_X: 312
+    m_Y: 0
+    m_Width: 711
+    m_Height: 181
+  - m_X: 319
+    m_Y: 271
+    m_Width: 704
+    m_Height: 752
+  - m_X: 326
+    m_Y: 0
+    m_Width: 697
+    m_Height: 1023
   - m_X: 295
     m_Y: 74
     m_Width: 728
-    m_Height: 200
+    m_Height: 107
   m_FontFeatureTable:
     m_MultipleSubstitutionRecords: []
     m_LigatureSubstitutionRecords: []
