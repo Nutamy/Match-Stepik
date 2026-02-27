@@ -24,13 +24,13 @@ namespace UI.Menu.Levels
         }
 
         private async UniTask LoadLevels(string key)
-        {
-            AsyncOperationHandle<LevelSequenceConfig> levels = Addressables.LoadAssetAsync<LevelSequenceConfig>(key);
-            await levels.ToUniTask();
-            if (levels.Status == AsyncOperationStatus.Succeeded)
+        {            
+            AsyncOperationHandle<LevelSequenceConfig> handle = Addressables.LoadAssetAsync<LevelSequenceConfig>(key);
+            await handle.ToUniTask();
+
+            if (handle.Status == AsyncOperationStatus.Succeeded)
             {
-                CurrentLevelSequence = levels.Result;
-                Addressables.Release(levels);
+                CurrentLevelSequence = handle.Result;                
             }
         }
     }

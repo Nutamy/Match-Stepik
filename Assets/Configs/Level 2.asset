@@ -21,9 +21,9 @@ MonoBehaviour:
     yPosition: 4
   - xPosition: 5
     yPosition: 5
-  _width: 10
-  _height: 10
-  _goalScore: 500
+  _width: 7
+  _height: 7
+  _goalScore: 10
   _moves: 10
   _tileSets: 1
   _levelNumber: 2

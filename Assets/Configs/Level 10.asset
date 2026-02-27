@@ -13,17 +13,17 @@ MonoBehaviour:
   m_Name: Level 10
   m_EditorClassIdentifier: 
   _blankTilesLayout:
-  - xPosition: 4
-    yPosition: 4
-  - xPosition: 4
-    yPosition: 5
-  - xPosition: 5
-    yPosition: 4
-  - xPosition: 5
-    yPosition: 5
-  _width: 10
-  _height: 10
+  - xPosition: 0
+    yPosition: 0
+  - xPosition: 7
+    yPosition: 7
+  - xPosition: 0
+    yPosition: 7
+  - xPosition: 7
+    yPosition: 0
+  _width: 8
+  _height: 8
   _goalScore: 500
   _moves: 10
-  _tileSets: 0
+  _tileSets: 1
   _levelNumber: 10

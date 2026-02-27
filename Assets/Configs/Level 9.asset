@@ -15,15 +15,15 @@ MonoBehaviour:
   _blankTilesLayout:
   - xPosition: 4
     yPosition: 4
-  - xPosition: 4
-    yPosition: 5
-  - xPosition: 5
-    yPosition: 4
   - xPosition: 5
     yPosition: 5
+  - xPosition: 6
+    yPosition: 6
+  - xPosition: 7
+    yPosition: 7
   _width: 10
   _height: 10
-  _goalScore: 500
+  _goalScore: 10
   _moves: 10
-  _tileSets: 0
+  _tileSets: 1
   _levelNumber: 9
