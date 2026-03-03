@@ -15,36 +15,53 @@ using UI;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Grid = Game.GridSystem.Grid;
 
 namespace EntryPoint
 {
-    public class EntryPoint : IInitializable
+    // Используем IAsyncStartable для поддержки async/await при старте
+    public class EntryPoint : IAsyncStartable
     {
-        // BG Tile Setup
         private LevelConfig _levelConfig;
-        private BlankTileSetup _blankTileSetup;
-        private GameBoard _gameBoard;
-        private GameData _gameData;
+        private readonly BlankTileSetup _blankTileSetup;
+        private readonly GameBoard _gameBoard;
+        private readonly GameData _gameData;
         private StateMachine _stateMachine;
-        private Grid _grid;
-        private IAnimation _animation;
-        private MatchFinder _matchFinder;
-        private TilePool _tilePool;
-        private GameProgress _gameProgress;
-        private ScoreCalculator _scoreCalculator;
-        private AudioManager _audioManager;
-        private IAsyncSceneLoading _sceneLoading;
-        private EndGamePanelView _endGame;
-        private GameDebug _gameDebug;
-        private GameResourcesLoader _gameResourcesLoader;
-        private SetupCamera _setupCamera;
-        private FXPool _fxPool;
+        private readonly Grid _grid;
+        private readonly IAnimation _animation;
+        private readonly MatchFinder _matchFinder;
+        private readonly TilePool _tilePool;
+        private readonly GameProgress _gameProgress;
+        private readonly ScoreCalculator _scoreCalculator;
+        private readonly AudioManager _audioManager;
+        private readonly IAsyncSceneLoading _sceneLoading;
+        private readonly EndGamePanelView _endGame;
+        private readonly GameDebug _gameDebug;
+        private readonly GameResourcesLoader _gameResourcesLoader;
+        private readonly SetupCamera _setupCamera;
+        private readonly FXPool _fxPool;
 
-        private bool _isDebuging;
-        //FX pool
+        private bool _isDebuging = false;
 
-        public EntryPoint(BlankTileSetup blankTileSetup, GameBoard gameBoard, GameData gameData, Grid grid, IAnimation animation, MatchFinder matchFinder, TilePool tilePool, GameProgress gameProgress, ScoreCalculator scoreCalculator, AudioManager audioManager, IAsyncSceneLoading sceneLoading, EndGamePanelView endGame, GameDebug gameDebug, GameResourcesLoader gameResourcesLoader, SetupCamera setupCamera, FXPool fxPool)
+        public EntryPoint(
+            BlankTileSetup blankTileSetup,
+            GameBoard gameBoard,
+            GameData gameData,
+            Grid grid,
+            IAnimation animation,
+            MatchFinder matchFinder,
+            TilePool tilePool,
+            GameProgress gameProgress,
+            ScoreCalculator scoreCalculator,
+            AudioManager audioManager,
+            IAsyncSceneLoading sceneLoading,
+            EndGamePanelView endGame,
+            GameDebug gameDebug,
+            GameResourcesLoader gameResourcesLoader,
+            SetupCamera setupCamera,
+            FXPool fxPool)
         {
             _blankTileSetup = blankTileSetup;
             _gameBoard = gameBoard;
@@ -64,24 +81,47 @@ namespace EntryPoint
             _fxPool = fxPool;
         }
 
-        public void Initialize()
+        // VContainer вызовет этот метод автоматически при старте сцены
+        public async UniTask StartAsync(CancellationToken cancellation)
         {
             _levelConfig = _gameData.CurrentLevel;
+
+            // 1. ЖДЕМ ЗАГРУЗКУ РЕСУРСОВ
+            // Это критически важно для Android, чтобы не спавнить пустые объекты
+            await _gameResourcesLoader.Load();
+
+            // 2. ИНИЦИАЛИЗАЦИЯ ДАННЫХ
+            // Теперь ресурсы в Loader гарантированно есть, и TilePool их увидит
+            _tilePool.SetCurrentLevelData(_levelConfig);
+
             if (_isDebuging)
             {
                 _gameDebug.ShowDebug(_gameBoard.transform);
             }
 
-            _tilePool.SetCurrentLevelData(_levelConfig);
-
+            // 3. НАСТРОЙКА СЕТКИ И ГЕЙМПЛЕЯ
             _grid.SetupGrid(_levelConfig.Width, _levelConfig.Height);
             _gameProgress.LoadLevelConfig(_levelConfig.GoalScore, _levelConfig.Moves);
-            // await resources
+
             _blankTileSetup.SetupBlanks(_levelConfig);
             _setupCamera.SetCamera(_grid.Width, _grid.Height, true);
-            _stateMachine = new StateMachine(_gameBoard, _grid, _animation, _matchFinder, _tilePool, _gameProgress, _scoreCalculator, _audioManager, _endGame, _fxPool);
+
+            // 4. ЗАПУСК СТЕЙТ-МАШИНЫ
+            _stateMachine = new StateMachine(
+                _gameBoard,
+                _grid,
+                _animation,
+                _matchFinder,
+                _tilePool,
+                _gameProgress,
+                _scoreCalculator,
+                _audioManager,
+                _endGame,
+                _fxPool);
+
+            // 5. ЗАВЕРШЕНИЕ ЗАГРУЗКИ
+            // Прячем экран загрузки только когда всё готово
             _sceneLoading.LoadingDone(true);
-            
         }
     }
 }

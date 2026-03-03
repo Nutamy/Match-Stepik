@@ -10,12 +10,16 @@ namespace Game.Score
         public int Score { get; private set; }
         public int GoalScore { get; private set; }
         public int Moves { get; private set; }
-        
+
         public void LoadLevelConfig(int goalScore, int moves)
         {
+            Debug.Log($"[GameProgress] ЗАГРУЗКА КОНФИГА: Goal = {goalScore}"); // Добавь это!
             Score = 0;
             GoalScore = goalScore;
             Moves = moves;
+
+            OnScoreChanged?.Invoke();
+            OnMove?.Invoke();
         }
 
         public void AddScore(int value)

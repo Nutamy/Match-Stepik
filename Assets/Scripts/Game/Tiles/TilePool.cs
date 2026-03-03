@@ -16,7 +16,7 @@ namespace Game.Tiles
 
         public void SetCurrentLevelData(LevelConfig levelConfig)
         {
-            _currentActiveSet = _resourcesLoader.GetTileSet(levelConfig.TileSets);
+            _currentActiveSet = _resourcesLoader.LoadedConfig;
         }
 
         private TileConfig GetRandomTileConfig()
