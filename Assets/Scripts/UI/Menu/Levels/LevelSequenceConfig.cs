@@ -14,9 +14,11 @@ namespace UI.Menu.Levels
 
         private void OnValidate()
         {
-            if (_levelSequence.Count != 5)
+            // Убираем жесткую проверку на 5 элементов, 
+            // так как теперь у нас 15 уровней в AllLevels.
+            if (_levelSequence == null || _levelSequence.Count == 0)
             {
-                throw new ArgumentOutOfRangeException("Levels sequence must contain 5 elements");
+                Debug.LogWarning("Level sequence is empty!");
             }
         }
     }

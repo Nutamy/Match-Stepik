@@ -1,6 +1,5 @@
-﻿using System;
-using TMPro;
-using UI.Menu.Levels;
+﻿using TMPro;
+using Levels;
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
@@ -11,48 +10,53 @@ namespace UI.Menu
     {
         [SerializeField] private TMP_Text _levelText;
         [SerializeField] private Button _levelButton;
-        public int LevelNumber { get; private set; }
 
+        private LevelConfig _myLevelConfig;
         private StartGame _startGame;
-        // start
-        private SetupLevelSequence _setupLevelSequence;
+
+        // Публичное свойство, если вдруг понадобится извне
+        public int LevelNumber => _myLevelConfig != null ? _myLevelConfig.LevelNumber : 0;
 
         private void OnEnable()
         {
-            _levelButton.onClick.AddListener(StartLevelButtonClick);
+            _levelButton.onClick.AddListener(OnButtonClick);
         }
 
         private void OnDisable()
         {
-            _levelButton.onClick.RemoveListener(StartLevelButtonClick);
+            _levelButton.onClick.RemoveListener(OnButtonClick);
         }
 
-        public void SetLevelNumber(int levelNumber)
+        // Метод инициализации кнопки данными
+        public void Init(LevelConfig config, int currentProgressLevel)
         {
-            LevelNumber = Mathf.Clamp(levelNumber, 1, 10);
+            _myLevelConfig = config;
+
+            if (_myLevelConfig == null)
+            {
+                gameObject.SetActive(false);
+                return;
+            }
+
+            gameObject.SetActive(true);
+            _levelText.text = _myLevelConfig.LevelNumber.ToString();
+
+            // Кнопка активна, если номер уровня меньше или равен прогрессу игрока
+            _levelButton.interactable = _myLevelConfig.LevelNumber <= currentProgressLevel;
         }
 
-        public void SetLable()
+        private void OnButtonClick()
         {
-            _levelText.text = LevelNumber.ToString();
-        }
-
-        public void SetButtonInteractable(bool value)
-        {
-            _levelButton.interactable = value;
-        }
-
-        private void StartLevelButtonClick()
-        {
-            int index = (LevelNumber - 1) % 5;
-            _startGame.Start(_setupLevelSequence.CurrentLevelSequence.LevelSequence[index]);
-            Debug.Log($"{_setupLevelSequence.CurrentLevelSequence.LevelSequence[LevelNumber - 1]} level has been started");
+            if (_myLevelConfig != null && _startGame != null)
+            {
+                Debug.Log($"[StartLevelButton] Starting level: {_myLevelConfig.LevelNumber}");
+                _startGame.Start(_myLevelConfig);
+            }
         }
 
         [Inject]
-        private void Construct(SetupLevelSequence setupLevelSequence, StartGame startGame)
+        private void Construct(StartGame startGame)
         {
-            _setupLevelSequence = setupLevelSequence;
             _startGame = startGame;
         }
     }

@@ -46,7 +46,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 48cb64a672b1b0a40a00e7e74a53d9bb
-    m_Address: Levels1-5
+    m_Address: AllLevels
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -101,7 +101,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e38618a6d645dd5409228ee62d5dd9a2
-    m_Address: Levels6-10
+    m_Address: LevelsPage_1
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

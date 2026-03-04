@@ -3,19 +3,26 @@ using Data;
 using SceneLoading;
 using UI.Menu.Levels;
 using VContainer.Unity;
+using System.Collections.Generic;
 
 namespace UI.Menu
 {
     public class MenuEntryPoint : IInitializable
     {
-        private IAsyncSceneLoading _sceneLoading;
-        private SetupLevelSequence _setupLevelSequence;
-        private LevelSequenceView _levelSequenceView;
-        private MenuView _menuView;
-        private AudioManager _audioManager;
-        private GameData _gameData;
+        private readonly IAsyncSceneLoading _sceneLoading;
+        private readonly SetupLevelSequence _setupLevelSequence;
+        private readonly LevelSequenceView _levelSequenceView;
+        private readonly MenuView _menuView;
+        private readonly AudioManager _audioManager;
+        private readonly GameData _gameData;
 
-        public MenuEntryPoint(IAsyncSceneLoading sceneLoading, SetupLevelSequence setupLevelSequence, LevelSequenceView levelSequenceView, MenuView menuView, AudioManager audioManager, GameData gameData)
+        public MenuEntryPoint(
+            IAsyncSceneLoading sceneLoading,
+            SetupLevelSequence setupLevelSequence,
+            LevelSequenceView levelSequenceView,
+            MenuView menuView,
+            AudioManager audioManager,
+            GameData gameData)
         {
             _sceneLoading = sceneLoading;
             _setupLevelSequence = setupLevelSequence;
@@ -27,14 +34,20 @@ namespace UI.Menu
 
         public async void Initialize()
         {
-            await _setupLevelSequence.Setup(_gameData.CurrentLevellIndex);
-            _levelSequenceView.SetupButtonsView(_gameData.CurrentLevellIndex);
+            // 1. Загружаем конфиг (теперь без аргументов, так как грузим AllLevels)
+            await _setupLevelSequence.Setup();
+
+            // 2. Создаем кнопки и получаем их список для анимации
+            // Используем индекс прогресса из GameData
+            int currentProgress = _gameData.CurrentLevellIndex;
+            List<StartLevelButton> buttons = _levelSequenceView.SetupButtonsView(currentProgress);
+
+            // 3. Базовые настройки меню
             _audioManager.PlayMenuMusic();
             _sceneLoading.LoadingDone(true);
-            await _menuView.StartAnimation();
-            
-            
-            
+
+            // 4. Запускаем анимацию и ПЕРЕДАЕМ список кнопок (исправляет ошибку CS7036)
+            await _menuView.StartAnimation(buttons);
         }
     }
 }

@@ -7,30 +7,22 @@ namespace UI.Menu.Levels
 {
     public class SetupLevelSequence
     {
-        public LevelSequenceConfig CurrentLevelSequence { get; private set; }
+        public LevelSequenceConfig AllLevels { get; private set; }
 
-        public async UniTask Setup(int currentLevel)
+        public async UniTask Setup()
         {
-            if (currentLevel <= 5)
-            {
-                Debug.Log("Load Levels1-5");
-                await LoadLevels("Levels1-5");
-            }
-            else
-            {
-                Debug.Log("Load Levels6-10");
-                await LoadLevels("Levels6-10");
-            }
-        }
-
-        private async UniTask LoadLevels(string key)
-        {            
-            AsyncOperationHandle<LevelSequenceConfig> handle = Addressables.LoadAssetAsync<LevelSequenceConfig>(key);
+            // Грузим один конфиг, в котором лежат все 15 уровней
+            AsyncOperationHandle<LevelSequenceConfig> handle = Addressables.LoadAssetAsync<LevelSequenceConfig>("AllLevels");
             await handle.ToUniTask();
 
             if (handle.Status == AsyncOperationStatus.Succeeded)
             {
-                CurrentLevelSequence = handle.Result;                
+                AllLevels = handle.Result;
+                Debug.Log($"[SetupLevelSequence] Загружено уровней: {AllLevels.LevelSequence.Count}");
+            }
+            else
+            {
+                Debug.LogError("[SetupLevelSequence] Не удалось загрузить AllLevels. Проверь Address в окне Addressables!");
             }
         }
     }
