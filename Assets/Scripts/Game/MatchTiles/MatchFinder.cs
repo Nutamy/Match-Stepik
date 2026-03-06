@@ -1,138 +1,132 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Game.Tiles;
 using UnityEngine;
 using Grid = Game.GridSystem.Grid;
 
 namespace Game.MatchTiles
 {
-    public enum MatchDirection
-    {
-        Horizontal,
-        Vertical,
-        LongHorizontal,
-        LongVertical,
-        Multiply,
-        None
-    }
-    
     public class MatchFinder
     {
-        public List<Tile> TilesToRemove { get; }
-        public MatchResult CurrentMatchResult { get; private set; }
-
-        public MatchFinder()
-        {
-            TilesToRemove = new List<Tile>();
-        }
+        public List<Tile> TilesToRemove { get; } = new List<Tile>();
+        // Теперь здесь хранятся ВСЕ совпадения за один ход
+        public List<MatchResult> AllMatchResults { get; private set; } = new List<MatchResult>();
 
         public bool CheckBoardForMatches(Grid grid)
         {
             var hasMatched = false;
             ClearTilesToRemove();
-            for (int x = 0; x < grid.Width; x++)
+            AllMatchResults.Clear();
+
+            HashSet<Tile> horizontalMatches = new HashSet<Tile>();
+            HashSet<Tile> verticalMatches = new HashSet<Tile>();
+
+            // 1. Поиск горизонталей (сканируем всё поле)
+            for (int y = 0; y < grid.Height; y++)
             {
-                for (int y = 0; y < grid.Height; y++)
+                for (int x = 0; x < grid.Width - 2; x++)
                 {
-                    var tile = grid.GetValue(x, y);
-                    if (tile == null) continue;
-                    if (tile.IsInteractable == false && tile.IsMatched) continue;
-                    MatchResult matchTiles = FindConnectedTiles(tile, grid);
-                    if (matchTiles.ConnectedTiles.Count < 3) continue;
-                    CurrentMatchResult = matchTiles;
-                    TilesToRemove.AddRange(matchTiles.ConnectedTiles);
-                    foreach (var connectedTile in matchTiles.ConnectedTiles)
+                    var t1 = grid.GetValue(x, y);
+                    var t2 = grid.GetValue(x + 1, y);
+                    var t3 = grid.GetValue(x + 2, y);
+
+                    if (IsValidMatch(t1, t2, t3))
                     {
-                        connectedTile.SetMatched(true);
+                        horizontalMatches.Add(t1);
+                        horizontalMatches.Add(t2);
+                        horizontalMatches.Add(t3);
+                        hasMatched = true;
                     }
-                    hasMatched = true;
                 }
             }
-            return hasMatched;
+
+            // 2. Поиск вертикалей (сканируем всё поле)
+            for (int x = 0; x < grid.Width; x++)
+            {
+                for (int y = 0; y < grid.Height - 2; y++)
+                {
+                    var t1 = grid.GetValue(x, y);
+                    var t2 = grid.GetValue(x, y + 1);
+                    var t3 = grid.GetValue(x, y + 2);
+
+                    if (IsValidMatch(t1, t2, t3))
+                    {
+                        verticalMatches.Add(t1);
+                        verticalMatches.Add(t2);
+                        verticalMatches.Add(t3);
+                        hasMatched = true;
+                    }
+                }
+            }
+
+            if (!hasMatched) return false;
+
+            // 3. Группируем найденные плитки в AllMatchResults
+            ProcessAllFoundMatches(horizontalMatches, verticalMatches, grid);
+
+            // Помечаем плитки для анимации удаления
+            foreach (var t in TilesToRemove)
+            {
+                t.SetMatched(true);
+            }
+
+            return true;
+        }
+
+        private void ProcessAllFoundMatches(HashSet<Tile> hMatches, HashSet<Tile> vMatches, Grid grid)
+        {
+            var intersection = hMatches.Intersect(vMatches).ToList();
+
+            // Если есть пересечение (Multiply), обрабатываем его как одну группу
+            if (intersection.Count > 0)
+            {
+                var combined = hMatches.Union(vMatches).ToList();
+                AllMatchResults.Add(new MatchResult(combined, MatchDirection.Multiply));
+                TilesToRemove.AddRange(combined);
+            }
+            else
+            {
+                // Иначе разбиваем на отдельные линии (чтобы засчитать 3+4 одновременно)
+                AddLineResults(hMatches, true, grid);
+                AddLineResults(vMatches, false, grid);
+            }
+        }
+
+        private void AddLineResults(HashSet<Tile> matches, bool isHorizontal, Grid grid)
+        {
+            if (matches.Count < 3) return;
+
+            // Группируем плитки, чтобы отличить две разные линии в разных частях поля
+            var groups = matches.GroupBy(t => isHorizontal ?
+                grid.WorldToGrid(t.transform.position).y :
+                grid.WorldToGrid(t.transform.position).x);
+
+            foreach (var group in groups)
+            {
+                var tiles = group.ToList();
+                MatchDirection dir;
+
+                if (tiles.Count >= 5) dir = MatchDirection.FiveInARow;
+                else if (tiles.Count == 4) dir = isHorizontal ? MatchDirection.LongHorizontal : MatchDirection.LongVertical;
+                else dir = isHorizontal ? MatchDirection.Horizontal : MatchDirection.Vertical;
+
+                AllMatchResults.Add(new MatchResult(tiles, dir));
+                TilesToRemove.AddRange(tiles);
+            }
+        }
+
+        private bool IsValidMatch(Tile t1, Tile t2, Tile t3)
+        {
+            if (t1 == null || t2 == null || t3 == null) return false;
+            if (!t1.IsInteractable || !t2.IsInteractable || !t3.IsInteractable) return false;
+            return t1.TileConfig == t2.TileConfig && t2.TileConfig == t3.TileConfig;
         }
 
         public void ClearTilesToRemove()
         {
-            for (int i = 0; i < TilesToRemove.Count; i++)
-            {
-                TilesToRemove[i].SetMatched(false);
-            }
+            foreach (var tile in TilesToRemove) tile.SetMatched(false);
             TilesToRemove.Clear();
-        }
-
-        public void ClearCurrentMatchResult() => CurrentMatchResult.ConnectedTiles.Clear();
-
-        private MatchResult FindConnectedTiles(Tile tile, Grid grid)
-        {
-            List<Tile> connectedTiles = new List<Tile>();
-            connectedTiles.Add(tile);
-            var tileGridPosition = grid.WorldToGrid(tile.gameObject.transform.position);
-            CheckDirection(tileGridPosition, Vector2Int.right, grid, tile, connectedTiles);
-            CheckDirection(tileGridPosition, Vector2Int.left, grid, tile, connectedTiles);
-            if (connectedTiles.Count == 3)
-            {
-                return CheckForMultiResult(connectedTiles, grid, Vector2Int.right, MatchDirection.Horizontal);
-            }
-
-            if (connectedTiles.Count > 3)
-            {
-                return CheckForMultiResult(connectedTiles, grid, Vector2Int.right, MatchDirection.LongHorizontal);
-            }
-            
-            connectedTiles.Clear();
-            connectedTiles.Add(tile);
-            CheckDirection(tileGridPosition, Vector2Int.up, grid, tile, connectedTiles);
-            CheckDirection(tileGridPosition, Vector2Int.down, grid, tile, connectedTiles);
-            if (connectedTiles.Count == 3)
-            {
-                return CheckForMultiResult(connectedTiles, grid, Vector2Int.up, MatchDirection.Vertical);
-            }
-
-            if (connectedTiles.Count > 3)
-            {
-                return CheckForMultiResult(connectedTiles, grid, Vector2Int.up, MatchDirection.LongVertical);
-            }
-            
-            connectedTiles.Clear();
-            return new MatchResult(connectedTiles, MatchDirection.None);
-        }
-
-        private MatchResult CheckForMultiResult(List<Tile> connectedTiles, Grid grid, Vector2Int direction, MatchDirection matchDirection)
-        {
-            foreach (var tile in connectedTiles)
-            {
-                var position = tile.transform.position;
-                List<Tile> multiConnectedTiles = new List<Tile>();
-                CheckDirection(grid.WorldToGrid(position), direction, grid, tile, multiConnectedTiles);
-                CheckDirection(grid.WorldToGrid(position), direction * -1, grid, tile, multiConnectedTiles);
-                if(multiConnectedTiles.Count <= 2) continue;
-                multiConnectedTiles.AddRange(connectedTiles);
-                return new MatchResult(connectedTiles, MatchDirection.Multiply);
-                
-            }
-            return new MatchResult(connectedTiles, matchDirection);
-        }
-
-        private void CheckDirection(Vector2Int position, Vector2Int direction, Grid grid, Tile tile,
-            List<Tile> connectedTiles)
-        {
-            int x = position.x + direction.x;
-            int y = position.y + direction.y;
-            while (grid.IsValidPosition(x, y))
-            {
-                var neighbourTile = grid.GetValue(x, y);
-                if (neighbourTile == null) break;
-                if (neighbourTile.IsInteractable && neighbourTile.IsMatched == false &&
-                    tile.TileConfig == neighbourTile.TileConfig)
-                {
-                    connectedTiles.Add(neighbourTile);
-                    x += direction.x;
-                    y += direction.y;
-                }
-                else
-                {
-                    break;
-                }
-            }
+            AllMatchResults.Clear();
         }
     }
 }

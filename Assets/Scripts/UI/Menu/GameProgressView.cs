@@ -66,13 +66,24 @@ namespace UI.Menu
         {
             _score.text = _gameProgress.Score.ToString();
             _goalScore.text = _gameProgress.GoalScore.ToString();
-            AnimateText(_score.gameObject);
+
+            // Используем метод с DOKill, чтобы анимации не стакались!
+            if (_animation != null)
+            {
+                // Передаем объект текста. DOKill внутри AnimationManager 
+                // сбросит масштаб в 1 перед каждым новым "пушем"
+                _animation.PunchScoreText(_score.gameObject);
+            }
         }
 
         private void UpdateMoves()
         {
             _moves.text = _gameProgress.Moves.ToString();
-            AnimateText(_moves.gameObject);
+
+            if (_animation != null)
+            {
+                _animation.PunchScoreText(_moves.gameObject);
+            }
         }
 
         private void AnimateText(GameObject target)

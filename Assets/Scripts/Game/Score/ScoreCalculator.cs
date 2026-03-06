@@ -30,6 +30,12 @@ namespace Game.Score
                 _gameProgress.AddScore(100);
                 Debug.Log("+100");
             }
+
+            if (matchDirection == MatchDirection.FiveInARow)
+            {
+                _gameProgress.AddScore(150);
+                Debug.Log("+150");
+            }
         }
     }
 }

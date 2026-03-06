@@ -9,8 +9,9 @@ namespace Animations
     {
         UniTask Reveal(GameObject target, float delay);
         UniTask HideTile(GameObject target);
-        
         void DoPunchAnimate(GameObject target, Vector3 scale, float duration);
+        // Добавляем этот метод:
+        void PunchScoreText(GameObject target);
         void MoveUI(RectTransform target, Vector3 position, float duration, Ease ease);
         void AnimateTile(Tile tile, float value);
         void MoveTile(Tile tile, Vector3 position, Ease ease);

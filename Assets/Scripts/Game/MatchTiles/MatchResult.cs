@@ -3,18 +3,27 @@ using Game.Tiles;
 
 namespace Game.MatchTiles
 {
+    // Добавляем это прямо здесь!
+    public enum MatchDirection
+    {
+        Horizontal,
+        Vertical,
+        LongHorizontal,
+        LongVertical,
+        FiveInARow,
+        Multiply,
+        None
+    }
+
     public class MatchResult
     {
-        private List<Tile> _connectedTiles;
-        private MatchDirection _matchDirection;
+        public List<Tile> ConnectedTiles { get; }
+        public MatchDirection Direction { get; }
 
-        public MatchResult(List<Tile> connectedTiles, MatchDirection matchDirection)
+        public MatchResult(List<Tile> connectedTiles, MatchDirection direction)
         {
-            _connectedTiles = connectedTiles;
-            _matchDirection = matchDirection;
+            ConnectedTiles = connectedTiles;
+            Direction = direction;
         }
-
-        public List<Tile> ConnectedTiles => _connectedTiles;
-        public MatchDirection MatchDirection => _matchDirection;
     }
 }

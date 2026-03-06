@@ -1,14 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using Animations;
+﻿using Animations;
 using Audio;
 using Cysharp.Threading.Tasks;
 using Game.Board;
 using Game.MatchTiles;
 using Game.Score;
 using Game.Tiles;
+using System;
+using System.Collections.Generic;
+using System.Threading;
 using UI;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 using Grid = Game.GridSystem.Grid;
 namespace GameStateMachine.States
 {
@@ -23,7 +26,7 @@ namespace GameStateMachine.States
         private ScoreCalculator _scoreCalculator;
         private AudioManager _audioManager;
         private FXPool _fxPool;
-        private GameBoard _gameBoard;
+        private GameBoard _gameBoard;     
 
         public RemoveTilesState(Grid grid, IStateSwitcher stateSwitcher, IAnimation animation, MatchFinder matchFinder, ScoreCalculator scoreCalculator, AudioManager audioManager, FXPool fxPool, GameBoard gameBoard)
         {
@@ -40,8 +43,12 @@ namespace GameStateMachine.States
         public async void Enter()
         {
             _cts = new CancellationTokenSource();
-            // score ++
-            _scoreCalculator.CalculateScoreToAdd(_matchFinder.CurrentMatchResult.MatchDirection);
+
+            foreach (var result in _matchFinder.AllMatchResults)
+            {
+                _scoreCalculator.CalculateScoreToAdd(result.Direction);
+            }
+
             await RemoveTiles(_matchFinder.TilesToRemove, _grid);
             _stateSwitcher.SwichState<RefillGridState>();
         }

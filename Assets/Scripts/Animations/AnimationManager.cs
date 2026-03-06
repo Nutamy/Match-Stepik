@@ -29,6 +29,18 @@ namespace Animations
             _cts.Cancel();
         }
 
+        public void PunchScoreText(GameObject target)
+        {
+            // ОСТАНАВЛИВАЕМ все текущие анимации на этом объекте
+            target.transform.DOKill();
+
+            // Сбрасываем размер в 1, чтобы анимация всегда начиналась с нормы
+            target.transform.localScale = Vector3.one;
+
+            // Запускаем пульсацию
+            target.transform.DOPunchScale(new Vector3(0.2f, 0.2f, 0.2f), 0.2f, 10, 1);
+        }
+
         public void DoPunchAnimate(GameObject target, Vector3 scale, float duration)
         {
             target.transform.DOPunchScale(scale, duration, 1, 0.5f);
