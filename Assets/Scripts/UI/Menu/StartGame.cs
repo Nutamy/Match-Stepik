@@ -12,6 +12,7 @@ namespace UI.Menu
         private AudioManager _audioManager;
         private IAsyncSceneLoading _sceneLoading;
         private CancellationTokenSource _cts;
+        private bool _isStarting;
 
         public StartGame(GameData gameData, AudioManager audioManager, IAsyncSceneLoading sceneLoading)
         {
@@ -22,6 +23,10 @@ namespace UI.Menu
 
         public async void Start(LevelConfig levelConfig)
         {
+            // Повторное нажатие на уровень (или другой уровень) во время перехода игнорируется
+            if (_isStarting) return;
+            _isStarting = true;
+
             _cts = new CancellationTokenSource();
             _gameData.SetCurrentLevelConfig(levelConfig);
             _audioManager.StopMusic();

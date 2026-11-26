@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using Animations;
 using Game.GridSystem;
 using Game.MatchTiles;
@@ -15,6 +17,10 @@ namespace Game.Board
 {
     public class GameBoard : MonoBehaviour
     {
+        private const int MaxBoardGenerations = 100;
+        private const float ShuffleDuration = 0.35f;
+        private readonly System.Random _random = new System.Random();
+
         private readonly List<Tile> _tilesToRefill = new List<Tile>();
         
         private Grid _grid;
@@ -33,16 +39,78 @@ namespace Game.Board
         {
             FillBoard();
             int counter = 0;
-            while (_matchFinder.CheckBoardForMatches(_grid))
+            // Стартовое поле: без готовых совпадений и хотя бы с одним ходом
+            while ((_matchFinder.CheckBoardForMatches(_grid) || !HasPossibleMove()) && counter < MaxBoardGenerations)
             {
                 ClearBoard();
                 FillBoard();
                 counter++;
             }
             _matchFinder.ClearTilesToRemove();
+            if (!HasPossibleMove()) ArrangeWithoutAnimation();
             Debug.Log("Board has been generated " + counter + " times");
             RevealTiles();
         }
+
+        public bool HasPossibleMove() =>
+            MoveFinder.HasPossibleMove(_grid.Width, _grid.Height, GetKey);
+
+        /// <summary>
+        /// Перемешивает подвижные фишки так, чтобы не было готовых совпадений и появился ход.
+        /// Если перестановкой не получилось (мало разных фишек), меняет типы фишек.
+        /// </summary>
+        public async UniTask ShuffleAsync()
+        {
+            foreach (var pair in Rearrange())
+            {
+                _animation.MoveTile(pair.Key, _grid.GridToWorld(pair.Value.x, pair.Value.y), Ease.InOutQuad);
+            }
+            await UniTask.Delay(TimeSpan.FromSeconds(ShuffleDuration), cancellationToken: destroyCancellationToken)
+                .SuppressCancellationThrow();
+        }
+
+        private void ArrangeWithoutAnimation()
+        {
+            foreach (var pair in Rearrange())
+            {
+                pair.Key.transform.localPosition = _grid.GridToWorld(pair.Value.x, pair.Value.y);
+            }
+        }
+
+        // Переставляет фишки в сетке; возвращает фишки, сменившие клетку, и их новые клетки
+        private Dictionary<Tile, Vector2Int> Rearrange()
+        {
+            var moved = new Dictionary<Tile, Vector2Int>();
+            var map = MoveFinder.TryShuffle(_grid.Width, _grid.Height, GetKey, _random);
+            if (map != null)
+            {
+                var snapshot = new Dictionary<Vector2Int, Tile>();
+                foreach (var source in map.Values) snapshot[source] = _grid.GetValue(source.x, source.y);
+                foreach (var pair in map)
+                {
+                    var tile = snapshot[pair.Value];
+                    _grid.SetValue(pair.Key.x, pair.Key.y, tile);
+                    if (pair.Key != pair.Value) moved[tile] = pair.Key;
+                }
+                return moved;
+            }
+
+            // Перестановок не хватило: перекрашиваем фишки, пока поле не станет играбельным
+            for (int attempt = 0; attempt < MaxBoardGenerations; attempt++)
+            {
+                for (int x = 0; x < _grid.Width; x++)
+                for (int y = 0; y < _grid.Height; y++)
+                {
+                    var tile = _grid.GetValue(x, y);
+                    if (MatchFinder.GetMatchKey(tile) != null) tile.SetTileConfig(_tilePool.GetRandomTileConfig());
+                }
+
+                if (MatchGrouping.FindGroups(_grid.Width, _grid.Height, GetKey).Count == 0 && HasPossibleMove()) break;
+            }
+            return moved;
+        }
+
+        private object GetKey(int x, int y) => MatchFinder.GetMatchKey(_grid.GetValue(x, y));
 
         private void RevealTiles()
         {

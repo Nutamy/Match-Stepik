@@ -38,7 +38,7 @@ namespace Game.MatchTiles
             return true;
         }
 
-        private static object GetMatchKey(Tile tile)
+        public static object GetMatchKey(Tile tile)
         {
             if (tile == null || !tile.IsInteractable) return null;
             return tile.TileConfig;

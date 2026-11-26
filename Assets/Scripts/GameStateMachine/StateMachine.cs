@@ -45,7 +45,7 @@ namespace GameStateMachine
                 new PlayerTurnState(_grid, this, _animation, _audioManager),
                 new SwapTilesState(_grid, this, _animation, _matchFinder, _gameProgress, _audioManager),
                 new RemoveTilesState(_grid, this, _animation, _matchFinder, _scoreCalculator, _audioManager, _fxPool, _gameBoard),
-                new RefillGridState(_grid, this, _animation, _matchFinder, _tilePool, _gameBoard.transform, _gameProgress, _audioManager),
+                new RefillGridState(_grid, this, _animation, _matchFinder, _tilePool, _gameBoard.transform, _gameProgress, _audioManager, _gameBoard),
                 new WinState(_endGame),
                 new LoseState(_endGame)
             };

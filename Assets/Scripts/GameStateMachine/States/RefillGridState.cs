@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Animations;
 using Audio;
+using Game.Board;
 using Game.MatchTiles;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
@@ -24,10 +25,11 @@ namespace GameStateMachine.States
         private readonly Transform _parent;
         private GameProgress _gameProgress;
         private AudioManager _audioManager;
+        private GameBoard _gameBoard;
         
         private List<Vector2Int> _tilesToRefillPos = new List<Vector2Int>();
         public RefillGridState(Grid grid, IStateSwitcher stateSwitcher, IAnimation animation, 
-            MatchFinder matchFinder, TilePool tilePool, Transform parent, GameProgress gameProgress, AudioManager audioManager)
+            MatchFinder matchFinder, TilePool tilePool, Transform parent, GameProgress gameProgress, AudioManager audioManager, GameBoard gameBoard)
         {
             _grid = grid;
             _stateSwitcher = stateSwitcher;
@@ -37,6 +39,7 @@ namespace GameStateMachine.States
             _parent = parent;
             _gameProgress = gameProgress;
             _audioManager= audioManager;
+            _gameBoard = gameBoard;
         }
 
         public async void Enter()
@@ -55,7 +58,7 @@ namespace GameStateMachine.States
             {
                 // Play sound check game over
                 _audioManager.PlayNoMatch();
-                CheckEndGame();
+                await CheckEndGame();
             }
         }
 
@@ -116,7 +119,7 @@ namespace GameStateMachine.States
             _cts?.Cancel();
         }
         
-        private void CheckEndGame()
+        private async UniTask CheckEndGame()
         {
             if (_gameProgress.CheckGoalScore())
             {
@@ -130,6 +133,12 @@ namespace GameStateMachine.States
             }
             else
             {
+                // Ходов на поле не осталось — перемешиваем, иначе игрок застрянет
+                if (!_gameBoard.HasPossibleMove())
+                {
+                    _audioManager.PlayWhoosh();
+                    await _gameBoard.ShuffleAsync();
+                }
                 _stateSwitcher.SwichState<PlayerTurnState>();
             }
             

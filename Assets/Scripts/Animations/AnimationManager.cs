@@ -15,14 +15,14 @@ namespace Animations
         {
             _cts = new CancellationTokenSource();
             target.transform.localScale = Vector3.one * 0.1f;
-            await target.transform.DOScale(Vector3.one, delay).SetEase(Ease.OutBounce);
+            await target.transform.DOScale(Vector3.one, delay).SetEase(Ease.OutBounce).SetLink(target);
             _cts.Cancel();
         }
 
         public async UniTask HideTile(GameObject target)
         {
             _cts = new CancellationTokenSource();
-            target.transform.DOScale(Vector3.zero, 0.05f).SetEase(Ease.OutBounce);
+            target.transform.DOScale(Vector3.zero, 0.05f).SetEase(Ease.OutBounce).SetLink(target);
             target.SetActive(false);
             target.transform.localScale = Vector3.one;
             await UniTask.Delay(TimeSpan.FromSeconds(0.05f), _cts.IsCancellationRequested);
@@ -38,27 +38,27 @@ namespace Animations
             target.transform.localScale = Vector3.one;
 
             // Запускаем пульсацию
-            target.transform.DOPunchScale(new Vector3(0.2f, 0.2f, 0.2f), 0.2f, 10, 1);
+            target.transform.DOPunchScale(new Vector3(0.2f, 0.2f, 0.2f), 0.2f, 10, 1).SetLink(target);
         }
 
         public void DoPunchAnimate(GameObject target, Vector3 scale, float duration)
         {
-            target.transform.DOPunchScale(scale, duration, 1, 0.5f);
+            target.transform.DOPunchScale(scale, duration, 1, 0.5f).SetLink(target);
         }
 
         public void MoveUI(RectTransform target, Vector3 position, float duration, Ease ease)
         {
-            target.DOAnchorPos(position, duration).SetEase(ease);
+            target.DOAnchorPos(position, duration).SetEase(ease).SetLink(target.gameObject);
         }
 
         public void AnimateTile(Tile tile, float value)
         {
-            tile.transform.DOScale(value, 0.3f).SetEase(Ease.OutCubic);
+            tile.transform.DOScale(value, 0.3f).SetEase(Ease.OutCubic).SetLink(tile.gameObject);
         }
 
         public void MoveTile(Tile tile, Vector3 position, Ease ease)
         {
-            tile.transform.DOLocalMove(position, 0.2f).SetEase(ease);
+            tile.transform.DOLocalMove(position, 0.2f).SetEase(ease).SetLink(tile.gameObject);
         }
 
         public void Dispose()

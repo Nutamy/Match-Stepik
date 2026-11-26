@@ -23,6 +23,7 @@ namespace UI
         private EndGame _endGame;
         private CancellationTokenSource _cts;
         private bool _isWinCondition;
+        private bool _isExiting;
 
         private readonly string _win = "Victory!\nYou have won!";
         private readonly string _lose = "You have lost\nTry again!";
@@ -67,6 +68,11 @@ namespace UI
 
         private void ExitGame()
         {
+            // Второе нажатие запускало повторную выгрузку сцены
+            if (_isExiting) return;
+            _isExiting = true;
+            _closeButton.interactable = false;
+
             _endGame.End(_isWinCondition);
             _cts?.Cancel();
         }

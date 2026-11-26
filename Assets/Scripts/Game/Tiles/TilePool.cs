@@ -19,7 +19,7 @@ namespace Game.Tiles
             _currentActiveSet = _resourcesLoader.LoadedConfig;
         }
 
-        private TileConfig GetRandomTileConfig()
+        public TileConfig GetRandomTileConfig()
         {
             if (_currentActiveSet == null)
             {
