@@ -15,5 +15,9 @@ namespace Animations
         void MoveUI(RectTransform target, Vector3 position, float duration, Ease ease);
         void AnimateTile(Tile tile, float value);
         void MoveTile(Tile tile, Vector3 position, Ease ease);
+        // Фишка коротко вспухает и сжимается в ноль; по завершении выключается
+        UniTask PopOut(GameObject target, float duration);
+        // Падение фишки в клетку с лёгким отскоком при приземлении
+        void DropTile(Tile tile, Vector3 localPosition, float duration, float delay);
     }
 }

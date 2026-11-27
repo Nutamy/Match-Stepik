@@ -61,6 +61,28 @@ namespace Animations
             tile.transform.DOLocalMove(position, 0.2f).SetEase(ease).SetLink(tile.gameObject);
         }
 
+        public async UniTask PopOut(GameObject target, float duration)
+        {
+            var t = target.transform;
+            t.DOKill();
+            var sequence = DOTween.Sequence().SetLink(target)
+                .Append(t.DOScale(Vector3.one * 1.15f, duration * 0.35f).SetEase(Ease.OutQuad))
+                .Append(t.DOScale(Vector3.zero, duration * 0.65f).SetEase(Ease.InBack));
+            await sequence.ToUniTask();
+            if (target == null) return;
+            target.SetActive(false);
+            t.localScale = Vector3.one;
+        }
+
+        public void DropTile(Tile tile, Vector3 localPosition, float duration, float delay)
+        {
+            var t = tile.transform;
+            t.DOKill();
+            t.localScale = Vector3.one;
+            t.DOLocalMove(localPosition, duration).SetDelay(delay)
+                .SetEase(Ease.OutBack, 1.1f).SetLink(tile.gameObject);
+        }
+
         public void Dispose()
         {
             _cts?.Dispose();

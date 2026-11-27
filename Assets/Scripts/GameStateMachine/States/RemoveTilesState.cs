@@ -9,9 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using UI;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.SocialPlatforms.Impl;
 using Grid = Game.GridSystem.Grid;
 namespace GameStateMachine.States
 {
@@ -64,18 +62,25 @@ namespace GameStateMachine.States
             _cts?.Dispose();
         }
 
+        private const float PopDuration = 0.22f;
+        private const int MaxRemoveSounds = 3;
+
+        // Все совпавшие фишки исчезают одновременно; один звук на группу (не больше трёх)
         private async UniTask RemoveTiles(List<Tile> tilesToRemove, Grid grid)
         {
+            int sounds = Math.Min(_matchFinder.AllMatchResults.Count, MaxRemoveSounds);
+            for (int i = 0; i < sounds; i++) _audioManager.PlayRemove();
+
+            var animations = new List<UniTask>(tilesToRemove.Count);
             foreach (var tile in tilesToRemove)
             {
-                // play sound
-                _audioManager.PlayRemove();
                 var position = grid.WorldToGrid(tile.transform.position);
                 grid.SetValue(position.x, position.y, null);
-                await _animation.HideTile(tile.gameObject);
-                // FX
                 _fxPool.GetFXFromPool(tile.transform.position, _gameBoard.transform);
+                animations.Add(_animation.PopOut(tile.gameObject, PopDuration));
             }
+
+            await UniTask.WhenAll(animations);
             _cts.Cancel();
         }
     }
