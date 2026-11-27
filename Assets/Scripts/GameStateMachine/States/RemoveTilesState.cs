@@ -24,9 +24,12 @@ namespace GameStateMachine.States
         private ScoreCalculator _scoreCalculator;
         private AudioManager _audioManager;
         private FXPool _fxPool;
-        private GameBoard _gameBoard;     
+        private GameBoard _gameBoard;
+        private readonly ScorePopups _scorePopups;
+        private readonly TurnCombo _turnCombo;
+        private const string PraiseText = "Керемет!";     
 
-        public RemoveTilesState(Grid grid, IStateSwitcher stateSwitcher, IAnimation animation, MatchFinder matchFinder, ScoreCalculator scoreCalculator, AudioManager audioManager, FXPool fxPool, GameBoard gameBoard)
+        public RemoveTilesState(Grid grid, IStateSwitcher stateSwitcher, IAnimation animation, MatchFinder matchFinder, ScoreCalculator scoreCalculator, AudioManager audioManager, FXPool fxPool, GameBoard gameBoard, ScorePopups scorePopups, TurnCombo turnCombo)
         {
             _grid = grid;
             _stateSwitcher = stateSwitcher;
@@ -36,15 +39,26 @@ namespace GameStateMachine.States
             _audioManager = audioManager;
             _fxPool = fxPool;
             _gameBoard = gameBoard;
+            _scorePopups = scorePopups;
+            _turnCombo = turnCombo;
         }
 
         public async void Enter()
         {
             _cts = new CancellationTokenSource();
 
+            _turnCombo.Next();
             foreach (var result in _matchFinder.AllMatchResults)
             {
-                _scoreCalculator.CalculateScoreToAdd(result.Direction);
+                int points = _scoreCalculator.CalculateScoreToAdd(result.Direction);
+                _scorePopups.ShowPoints(GroupCenter(result), points);
+            }
+
+            // Длинный каскад — похвала по центру поля
+            if (_turnCombo.IsPraiseStep)
+            {
+                var center = _grid.GridToWorld(0, 0) + new Vector3((_grid.Width - 1) / 2f, (_grid.Height - 1) / 2f, 0f);
+                _scorePopups.ShowPraise(_gameBoard.transform.TransformPoint(center), PraiseText);
             }
 
             await RemoveTiles(_matchFinder.TilesToRemove, _grid);
@@ -62,14 +76,30 @@ namespace GameStateMachine.States
             _cts?.Dispose();
         }
 
-        private const float PopDuration = 0.22f;
-        private const int MaxRemoveSounds = 3;
+        private static Vector3 GroupCenter(MatchResult result)
+        {
+            var sum = Vector3.zero;
+            foreach (var tile in result.ConnectedTiles) sum += tile.transform.position;
+            return sum / Mathf.Max(1, result.ConnectedTiles.Count);
+        }
 
-        // Все совпавшие фишки исчезают одновременно; один звук на группу (не больше трёх)
+        private const float PopDuration = 0.22f;
+        // Один звук на группу; тон выше на каждом шаге каскада, особые группы звучат последними
+        private void PlayGroupSounds()
+        {
+            float pitch = CascadeSound.PitchForStep(_turnCombo.Step);
+            var directions = new List<MatchDirection>(_matchFinder.AllMatchResults.Count);
+            foreach (var result in _matchFinder.AllMatchResults) directions.Add(result.Direction);
+
+            var order = CascadeSound.PlaybackOrder(directions);
+            for (int i = 0; i < order.Count; i++)
+                _audioManager.PlayGroup(order[i], pitch, i * CascadeSound.GroupStagger);
+        }
+
+        // Все совпавшие фишки исчезают одновременно
         private async UniTask RemoveTiles(List<Tile> tilesToRemove, Grid grid)
         {
-            int sounds = Math.Min(_matchFinder.AllMatchResults.Count, MaxRemoveSounds);
-            for (int i = 0; i < sounds; i++) _audioManager.PlayRemove();
+            PlayGroupSounds();
 
             var animations = new List<UniTask>(tilesToRemove.Count);
             foreach (var tile in tilesToRemove)

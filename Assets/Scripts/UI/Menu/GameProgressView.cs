@@ -12,6 +12,8 @@ namespace UI.Menu
         [SerializeField] private TMP_Text _goalScore;
         [SerializeField] private TMP_Text _moves;
 
+        public TMP_Text ScoreText => _score;
+
         private GameProgress _gameProgress;
         private IAnimation _animation;
 

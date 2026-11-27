@@ -21,8 +21,9 @@ namespace GameStateMachine.States
         private MatchFinder _matchFinder;
         private GameProgress _gameProgress;
         private AudioManager _audioManager;
+        private readonly TurnCombo _turnCombo;
 
-        public SwapTilesState(Grid grid, IStateSwitcher stateSwitcher, IAnimation animation, MatchFinder matchFinder, GameProgress gameProgress, AudioManager audioManager)
+        public SwapTilesState(Grid grid, IStateSwitcher stateSwitcher, IAnimation animation, MatchFinder matchFinder, GameProgress gameProgress, AudioManager audioManager, TurnCombo turnCombo)
         {
             _grid = grid;
             _stateSwitcher = stateSwitcher;
@@ -30,11 +31,13 @@ namespace GameStateMachine.States
             _matchFinder = matchFinder;
             _gameProgress = gameProgress;
             _audioManager = audioManager;
+            _turnCombo = turnCombo;
         }
 
         public async void Enter()
         {
             _cts = new CancellationTokenSource();
+            _turnCombo.Reset();
             // play sound
             _audioManager.PlayWhoosh();
             await SwapTiles(_grid.CurrentPosition, _grid.TargetPosition);

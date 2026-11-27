@@ -54,6 +54,7 @@ namespace Game.Tiles
         {
             var blankPrefab = _objectResolver.Instantiate(_resourcesLoader.TileBlank, position, Quaternion.identity, parent);
             var blankTile = blankPrefab.GetComponent<Tile>();
+            MaskToBoard(blankPrefab);
             blankTile.SetTileConfig(_resourcesLoader.BlankConfig);
             return blankTile;
         }
@@ -62,9 +63,17 @@ namespace Game.Tiles
         {
             var tilePrefab = _objectResolver.Instantiate(_resourcesLoader.TilePrefab, position, Quaternion.identity, parent);
             var tile = tilePrefab.GetComponent<Tile>();
+            MaskToBoard(tilePrefab);
             tile.SetTileConfig(GetRandomTileConfig());
             _tilePool.Add(tile);
             return tile;
+        }
+
+        // Фишки видны только внутри маски поля: падающие сверху не рисуются поверх рамки и счётчика
+        private static void MaskToBoard(GameObject tileObject)
+        {
+            foreach (var renderer in tileObject.GetComponentsInChildren<SpriteRenderer>(true))
+                renderer.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
         }
 
         //private TileConfig GetRandomTileConfig() =>

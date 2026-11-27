@@ -37,6 +37,7 @@ namespace Game.Board
 
         public void CreateBoard()
         {
+            CreateBoardMask();
             FillBoard();
             int counter = 0;
             // Стартовое поле: без готовых совпадений и хотя бы с одним ходом
@@ -50,6 +51,26 @@ namespace Game.Board
             _matchFinder.ClearTilesToRemove();
             Debug.Log("Board has been generated " + counter + " times");
             RevealTiles();
+        }
+
+        // Запас вокруг поля: выбранная фишка увеличивается до 1.2 и не должна обрезаться
+        private const float MaskMargin = 0.15f;
+
+        private void CreateBoardMask()
+        {
+            if (transform.Find("BoardMask") != null) return;
+
+            var maskObject = new GameObject("BoardMask", typeof(SpriteMask));
+            maskObject.transform.SetParent(transform, false);
+            maskObject.transform.localPosition = _grid.GridToWorld(0, 0)
+                + new Vector3((_grid.Width - 1) / 2f, (_grid.Height - 1) / 2f, 0f);
+            maskObject.transform.localScale = new Vector3(_grid.Width + MaskMargin * 2f, _grid.Height + MaskMargin * 2f, 1f);
+
+            // Квадрат 1x1 единица из белой текстуры
+            var texture = Texture2D.whiteTexture;
+            var sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height),
+                new Vector2(0.5f, 0.5f), texture.width);
+            maskObject.GetComponent<SpriteMask>().sprite = sprite;
         }
 
         public bool HasPossibleMove() =>

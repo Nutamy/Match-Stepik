@@ -1,41 +1,41 @@
 ﻿using Game.MatchTiles;
-using UnityEngine;
 
 namespace Game.Score
 {
     public class ScoreCalculator
     {
-        private GameProgress _gameProgress;
+        private readonly GameProgress _gameProgress;
 
         public ScoreCalculator(GameProgress gameProgress)
         {
             _gameProgress = gameProgress;
         }
 
-        public void CalculateScoreToAdd(MatchDirection matchDirection)
+        public static int PointsFor(MatchDirection matchDirection)
         {
-            if (matchDirection == MatchDirection.Horizontal || matchDirection == MatchDirection.Vertical)
+            switch (matchDirection)
             {
-                _gameProgress.AddScore(20);
-                Debug.Log("+20");
+                case MatchDirection.Horizontal:
+                case MatchDirection.Vertical:
+                    return 20;
+                case MatchDirection.LongHorizontal:
+                case MatchDirection.LongVertical:
+                    return 50;
+                case MatchDirection.Multiply:
+                    return 100;
+                case MatchDirection.FiveInARow:
+                    return 150;
+                default:
+                    return 0;
             }
-            if (matchDirection == MatchDirection.LongHorizontal || matchDirection == MatchDirection.LongVertical)
-            {
-                _gameProgress.AddScore(50);
-                Debug.Log("+50");
-            }
+        }
 
-            if (matchDirection == MatchDirection.Multiply)
-            {
-                _gameProgress.AddScore(100);
-                Debug.Log("+100");
-            }
-
-            if (matchDirection == MatchDirection.FiveInARow)
-            {
-                _gameProgress.AddScore(150);
-                Debug.Log("+150");
-            }
+        /// <summary>Начисляет очки за группу и возвращает, сколько начислено.</summary>
+        public int CalculateScoreToAdd(MatchDirection matchDirection)
+        {
+            int points = PointsFor(matchDirection);
+            if (points > 0) _gameProgress.AddScore(points);
+            return points;
         }
     }
 }
