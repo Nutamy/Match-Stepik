@@ -14,6 +14,9 @@ namespace GameStateMachine.States
 {
     public class SwapTilesState : IState, IDisposable
     {
+        private const float ShakeStrength = 0.12f;
+        private const float ShakeDuration = 0.3f;
+
         private CancellationTokenSource _cts;
         private Grid _grid;
         private IStateSwitcher _stateSwitcher;
@@ -45,6 +48,7 @@ namespace GameStateMachine.States
             {
                 // play sound no match
                 _audioManager.PlayNoMatch();
+                await ShakeSwappedTiles(_grid.CurrentPosition, _grid.TargetPosition);
                 await SwapTiles(_grid.TargetPosition, _grid.CurrentPosition);
                 _stateSwitcher.SwichState<PlayerTurnState>();
             }
@@ -79,6 +83,15 @@ namespace GameStateMachine.States
             _grid.SetValue(target.x, target.y, currentTile);
             
             await UniTask.Delay(TimeSpan.FromSeconds(0.5f), _cts.IsCancellationRequested);
+        }
+
+        // Ошибочный ход: обе фишки коротко трясутся поперёк линии обмена, затем возвращаются
+        private UniTask ShakeSwappedTiles(Vector2Int current, Vector2Int target)
+        {
+            var strength = current.x == target.x ? new Vector3(ShakeStrength, 0f, 0f) : new Vector3(0f, ShakeStrength, 0f);
+            return UniTask.WhenAll(
+                _animation.ShakeTile(_grid.GetValue(current.x, current.y), _grid.GridToWorld(current.x, current.y), strength, ShakeDuration),
+                _animation.ShakeTile(_grid.GetValue(target.x, target.y), _grid.GridToWorld(target.x, target.y), strength, ShakeDuration));
         }
 
         private void MoveAnimation(Tile tileToMove, Vector2Int position)

@@ -83,6 +83,18 @@ namespace Animations
                 .SetEase(Ease.OutBack, 1.1f).SetLink(tile.gameObject);
         }
 
+        public async UniTask ShakeTile(Tile tile, Vector3 localPosition, Vector3 strength, float duration)
+        {
+            var t = tile.transform;
+            // Доводим до конца перемещение и масштаб выбора, чтобы тряска шла от точной клетки
+            t.DOKill(true);
+            t.localPosition = localPosition;
+            await t.DOShakePosition(duration, strength, 16, 0f, false, true)
+                .SetEase(Ease.OutQuad).SetLink(tile.gameObject).ToUniTask();
+            if (tile == null) return;
+            t.localPosition = localPosition;
+        }
+
         public void Dispose()
         {
             _cts?.Dispose();

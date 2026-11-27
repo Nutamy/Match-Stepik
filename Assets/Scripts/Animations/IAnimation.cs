@@ -19,5 +19,7 @@ namespace Animations
         UniTask PopOut(GameObject target, float duration);
         // Падение фишки в клетку с лёгким отскоком при приземлении
         void DropTile(Tile tile, Vector3 localPosition, float duration, float delay);
+        // Короткая тряска фишки на месте (ошибочный ход); в конце фишка стоит ровно в localPosition
+        UniTask ShakeTile(Tile tile, Vector3 localPosition, Vector3 strength, float duration);
     }
 }
