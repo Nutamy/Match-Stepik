@@ -32,6 +32,7 @@ namespace DI
             builder.RegisterInstance(_endGame);
             builder.RegisterInstance(_gameProgress);
             builder.Register<FXPool>(Lifetime.Singleton);
+            builder.Register<ScorePopups>(Lifetime.Singleton);
             builder.Register<BlankTileSetup>(Lifetime.Singleton);
             builder.Register<SetupCamera>(Lifetime.Singleton);
             builder.Register<TilePool>(Lifetime.Singleton);

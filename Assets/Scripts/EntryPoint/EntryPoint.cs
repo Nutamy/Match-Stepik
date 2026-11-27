@@ -42,6 +42,7 @@ namespace EntryPoint
         private readonly GameResourcesLoader _gameResourcesLoader;
         private readonly SetupCamera _setupCamera;
         private readonly FXPool _fxPool;
+        private readonly ScorePopups _scorePopups;
 
         private bool _isDebuging = false;
 
@@ -61,7 +62,8 @@ namespace EntryPoint
             GameDebug gameDebug,
             GameResourcesLoader gameResourcesLoader,
             SetupCamera setupCamera,
-            FXPool fxPool)
+            FXPool fxPool,
+            ScorePopups scorePopups)
         {
             _blankTileSetup = blankTileSetup;
             _gameBoard = gameBoard;
@@ -79,6 +81,7 @@ namespace EntryPoint
             _gameResourcesLoader = gameResourcesLoader;
             _setupCamera = setupCamera;
             _fxPool = fxPool;
+            _scorePopups = scorePopups;
         }
 
         // VContainer вызовет этот метод автоматически при старте сцены
@@ -117,7 +120,8 @@ namespace EntryPoint
                 _scoreCalculator,
                 _audioManager,
                 _endGame,
-                _fxPool);
+                _fxPool,
+                _scorePopups);
 
             // 5. ЗАВЕРШЕНИЕ ЗАГРУЗКИ
             // Прячем экран загрузки только когда всё готово
