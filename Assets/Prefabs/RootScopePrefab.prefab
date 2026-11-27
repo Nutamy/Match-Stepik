@@ -160,6 +160,9 @@ MonoBehaviour:
   _win: {fileID: 8300000, guid: 0424eaf9add13bd4fab49b73e09a7f32, type: 3}
   _lose: {fileID: 8300000, guid: ecc680d84c259d34d99f0b233ca3ff2b, type: 3}
   _whoosh: {fileID: 8300000, guid: ed46ab586bd587b489d735769e302d40, type: 3}
+  _matchFour: {fileID: 8300000, guid: 80de1ce7a05b96f4ab4d96b047352d6a, type: 3}
+  _matchFive: {fileID: 8300000, guid: ea6aec65b48990147bbc8e2d69a8775b, type: 3}
+  _matchCross: {fileID: 8300000, guid: 00a486d2cbe633844ae2472ff93bcaaa, type: 3}
 --- !u!82 &2776151129239303599
 AudioSource:
   m_ObjectHideFlags: 0

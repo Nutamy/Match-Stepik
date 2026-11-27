@@ -84,13 +84,22 @@ namespace GameStateMachine.States
         }
 
         private const float PopDuration = 0.22f;
-        private const int MaxRemoveSounds = 3;
+        // Один звук на группу; тон выше на каждом шаге каскада, особые группы звучат последними
+        private void PlayGroupSounds()
+        {
+            float pitch = CascadeSound.PitchForStep(_turnCombo.Step);
+            var directions = new List<MatchDirection>(_matchFinder.AllMatchResults.Count);
+            foreach (var result in _matchFinder.AllMatchResults) directions.Add(result.Direction);
 
-        // Все совпавшие фишки исчезают одновременно; один звук на группу (не больше трёх)
+            var order = CascadeSound.PlaybackOrder(directions);
+            for (int i = 0; i < order.Count; i++)
+                _audioManager.PlayGroup(order[i], pitch, i * CascadeSound.GroupStagger);
+        }
+
+        // Все совпавшие фишки исчезают одновременно
         private async UniTask RemoveTiles(List<Tile> tilesToRemove, Grid grid)
         {
-            int sounds = Math.Min(_matchFinder.AllMatchResults.Count, MaxRemoveSounds);
-            for (int i = 0; i < sounds; i++) _audioManager.PlayRemove();
+            PlayGroupSounds();
 
             var animations = new List<UniTask>(tilesToRemove.Count);
             foreach (var tile in tilesToRemove)
