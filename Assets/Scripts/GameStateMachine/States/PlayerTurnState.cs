@@ -26,17 +26,15 @@ namespace GameStateMachine.States
         // Порог свайпа в клетках поля: меньше — это нажатие, больше — обмен с соседом
         private const float SwipeThreshold = 0.4f;
 
-        // Подсказка: через HintDelay секунд без касаний пара фишек хода покачивается
+        // Подсказка: через HintDelay секунд без касаний две фишки хода тянутся навстречу друг другу
         private const float HintDelay = 5f;
-        private const float HintAngle = 12f;
-        private const float HintSwayDuration = 0.6f;
-        private const float HintPause = 1.2f;
+        private const float HintPullDistance = 0.22f;   // в клетках
+        private const float HintPullDuration = 0.36f;   // туда и обратно
+        private const float HintPause = 1.1f;
 
         private CancellationTokenSource _hintCts;
-        private Tile _hintTileA;
-        private Tile _hintTileB;
-        private Tween _hintSwayA;
-        private Tween _hintSwayB;
+        private Tween _hintPullA;
+        private Tween _hintPullB;
 
         private bool _isPressed;
         private bool _pressedOnSelected;
@@ -168,11 +166,11 @@ namespace GameStateMachine.States
                 .SuppressCancellationThrow();
             if (cancelled || !_gameBoard.TryFindMove(out var from, out var to)) return;
 
-            _hintTileA = _grid.GetValue(from.x, from.y);
-            _hintTileB = _grid.GetValue(to.x, to.y);
-            _hintSwayA = _animation.SwayTile(_hintTileA, HintAngle, HintSwayDuration, HintPause);
-            // Вторая фишка качается навстречу первой
-            _hintSwayB = _animation.SwayTile(_hintTileB, -HintAngle, HintSwayDuration, HintPause);
+            var direction = to - from;
+            _hintPullA = _animation.HintPull(_grid.GetValue(from.x, from.y), _grid.GridToWorld(from.x, from.y),
+                direction, HintPullDistance, HintPullDuration, HintPause);
+            _hintPullB = _animation.HintPull(_grid.GetValue(to.x, to.y), _grid.GridToWorld(to.x, to.y),
+                -direction, HintPullDistance, HintPullDuration, HintPause);
         }
 
         private void CancelHint()
@@ -181,10 +179,10 @@ namespace GameStateMachine.States
             _hintCts?.Dispose();
             _hintCts = null;
 
-            _animation.StopSway(_hintTileA, _hintSwayA);
-            _animation.StopSway(_hintTileB, _hintSwayB);
-            _hintTileA = _hintTileB = null;
-            _hintSwayA = _hintSwayB = null;
+            // Kill возвращает фишки ровно в их клетки и прежний размер
+            _hintPullA?.Kill();
+            _hintPullB?.Kill();
+            _hintPullA = _hintPullB = null;
         }
 
         public void Dispose()

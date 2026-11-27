@@ -21,9 +21,8 @@ namespace Animations
         void DropTile(Tile tile, Vector3 localPosition, float duration, float delay);
         // Короткая тряска фишки на месте (ошибочный ход); в конце фишка стоит ровно в localPosition
         UniTask ShakeTile(Tile tile, Vector3 localPosition, Vector3 strength, float duration);
-        // Подсказка: фишка покачивается (поворот), повторяясь с паузой, пока анимацию не убьют
-        Tween SwayTile(Tile tile, float angle, float swayDuration, float pause);
-        // Останавливает покачивание и ставит фишку ровно
-        void StopSway(Tile tile, Tween sway);
+        // Подсказка: фишка дважды тянется из клетки home в сторону direction и возвращается,
+        // затем пауза; повторяется, пока анимацию не убьют. При Kill фишка встаёт на место
+        Tween HintPull(Tile tile, Vector3 home, Vector2Int direction, float distance, float pullDuration, float pause);
     }
 }
