@@ -43,7 +43,7 @@ namespace GameStateMachine
             _states = new List<IState>()
             {
                 new PrepareState(this, _gameBoard),
-                new PlayerTurnState(_grid, this, _animation, _audioManager),
+                new PlayerTurnState(_grid, this, _animation, _audioManager, _gameBoard),
                 new SwapTilesState(_grid, this, _animation, _matchFinder, _gameProgress, _audioManager, turnCombo),
                 new RemoveTilesState(_grid, this, _animation, _matchFinder, _scoreCalculator, _audioManager, _fxPool, _gameBoard, scorePopups, turnCombo),
                 new RefillGridState(_grid, this, _animation, _matchFinder, _tilePool, _gameBoard.transform, _gameProgress, _audioManager, _gameBoard),

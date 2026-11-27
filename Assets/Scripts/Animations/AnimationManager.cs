@@ -95,6 +95,27 @@ namespace Animations
             t.localPosition = localPosition;
         }
 
+        public Tween SwayTile(Tile tile, float angle, float swayDuration, float pause)
+        {
+            var t = tile.transform;
+            t.localRotation = Quaternion.identity;
+            float step = swayDuration / 5f;
+            // Влево-вправо с затуханием, затем пауза; поворот не мешает масштабу выбора и перемещениям
+            return DOTween.Sequence().SetLink(tile.gameObject)
+                .Append(t.DOLocalRotate(new Vector3(0f, 0f, angle), step).SetEase(Ease.OutQuad))
+                .Append(t.DOLocalRotate(new Vector3(0f, 0f, -angle), step * 1.5f).SetEase(Ease.InOutQuad))
+                .Append(t.DOLocalRotate(new Vector3(0f, 0f, angle * 0.5f), step * 1.25f).SetEase(Ease.InOutQuad))
+                .Append(t.DOLocalRotate(Vector3.zero, step * 1.25f).SetEase(Ease.InQuad))
+                .AppendInterval(pause)
+                .SetLoops(-1);
+        }
+
+        public void StopSway(Tile tile, Tween sway)
+        {
+            sway?.Kill();
+            if (tile != null) tile.transform.localRotation = Quaternion.identity;
+        }
+
         public void Dispose()
         {
             _cts?.Dispose();

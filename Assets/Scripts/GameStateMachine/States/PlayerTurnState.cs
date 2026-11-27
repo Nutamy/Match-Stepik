@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Threading;
 using Animations;
 using Audio;
+using Cysharp.Threading.Tasks;
+using DG.Tweening;
+using Game.Board;
 using Game.Tiles;
 using Input;
 using UnityEngine;
@@ -17,17 +21,31 @@ namespace GameStateMachine.States
         private readonly Camera _camera;
         private IAnimation _animation;
         private AudioManager _audioManager;
+        private readonly GameBoard _gameBoard;
 
         // Порог свайпа в клетках поля: меньше — это нажатие, больше — обмен с соседом
         private const float SwipeThreshold = 0.4f;
+
+        // Подсказка: через HintDelay секунд без касаний пара фишек хода покачивается
+        private const float HintDelay = 5f;
+        private const float HintAngle = 12f;
+        private const float HintSwayDuration = 0.6f;
+        private const float HintPause = 1.2f;
+
+        private CancellationTokenSource _hintCts;
+        private Tile _hintTileA;
+        private Tile _hintTileB;
+        private Tween _hintSwayA;
+        private Tween _hintSwayB;
 
         private bool _isPressed;
         private bool _pressedOnSelected;
         private Vector2Int _pressCell;
         private Vector2 _pressWorld;
 
-        public PlayerTurnState(Grid grid, IStateSwitcher stateSwitcher, IAnimation animation, AudioManager audioManager)
+        public PlayerTurnState(Grid grid, IStateSwitcher stateSwitcher, IAnimation animation, AudioManager audioManager, GameBoard gameBoard)
         {
+            _gameBoard = gameBoard;
             _inputReader =  new InputReader();
             _grid = grid;
             _stateSwitcher = stateSwitcher;
@@ -43,6 +61,9 @@ namespace GameStateMachine.States
 
         private void OnPointerDown()
         {
+            // Любое касание убирает подсказку и заново запускает отсчёт бездействия
+            RestartHintTimer();
+
             var world = PointerWorld();
             var cell = _grid.WorldToGrid(world);
             if (!IsPlayable(cell)) return;
@@ -125,15 +146,50 @@ namespace GameStateMachine.States
             _isPressed = false;
             _inputReader.EnableInputs(true);
             DeselectTile();
+            RestartHintTimer();
         }
 
         public void Exit()
         {
             _inputReader.EnableInputs(false);
+            CancelHint();
+        }
+
+        private void RestartHintTimer()
+        {
+            CancelHint();
+            _hintCts = new CancellationTokenSource();
+            ShowHintAfterDelay(_hintCts.Token).Forget();
+        }
+
+        private async UniTaskVoid ShowHintAfterDelay(CancellationToken token)
+        {
+            bool cancelled = await UniTask.Delay(TimeSpan.FromSeconds(HintDelay), cancellationToken: token)
+                .SuppressCancellationThrow();
+            if (cancelled || !_gameBoard.TryFindMove(out var from, out var to)) return;
+
+            _hintTileA = _grid.GetValue(from.x, from.y);
+            _hintTileB = _grid.GetValue(to.x, to.y);
+            _hintSwayA = _animation.SwayTile(_hintTileA, HintAngle, HintSwayDuration, HintPause);
+            // Вторая фишка качается навстречу первой
+            _hintSwayB = _animation.SwayTile(_hintTileB, -HintAngle, HintSwayDuration, HintPause);
+        }
+
+        private void CancelHint()
+        {
+            _hintCts?.Cancel();
+            _hintCts?.Dispose();
+            _hintCts = null;
+
+            _animation.StopSway(_hintTileA, _hintSwayA);
+            _animation.StopSway(_hintTileB, _hintSwayB);
+            _hintTileA = _hintTileB = null;
+            _hintSwayA = _hintSwayB = null;
         }
 
         public void Dispose()
         {
+            CancelHint();
             _inputReader.PointerDown -= OnPointerDown;
             _inputReader.PointerMoved -= OnPointerMoved;
             _inputReader.PointerUp -= OnPointerUp;

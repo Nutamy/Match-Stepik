@@ -76,6 +76,10 @@ namespace Game.Board
         public bool HasPossibleMove() =>
             MoveFinder.HasPossibleMove(_grid.Width, _grid.Height, GetKey);
 
+        // Ход для подсказки: пара соседних клеток, обмен которых даёт линию
+        public bool TryFindMove(out Vector2Int from, out Vector2Int to) =>
+            MoveFinder.TryFindMove(_grid.Width, _grid.Height, GetKey, out from, out to);
+
         /// <summary>
         /// Перемешивает подвижные фишки так, чтобы не было готовых совпадений и появился ход.
         /// Если перестановкой не получилось (мало разных фишек), меняет типы фишек.
