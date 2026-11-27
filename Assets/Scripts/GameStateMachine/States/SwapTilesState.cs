@@ -44,7 +44,9 @@ namespace GameStateMachine.States
             // play sound
             _audioManager.PlayWhoosh();
             await SwapTiles(_grid.CurrentPosition, _grid.TargetPosition);
-            if (_matchFinder.CheckBoardForMatches(_grid) == false)
+            // Ракета, которую сдвинул игрок, срабатывает и без совпадения
+            var moved = new[] { _grid.CurrentPosition, _grid.TargetPosition };
+            if (_matchFinder.CheckBoardForMatches(_grid, moved) == false)
             {
                 // play sound no match
                 _audioManager.PlayNoMatch();

@@ -54,6 +54,12 @@ namespace GameStateMachine.States
                 _scorePopups.ShowPoints(GroupCenter(result), points);
             }
 
+            foreach (var blast in _matchFinder.RocketBlasts)
+            {
+                int points = _scoreCalculator.AddRocketScore(blast.Cleared.Count);
+                if (points > 0) _scorePopups.ShowPoints(CellWorld(blast.Origin), points);
+            }
+
             // Длинный каскад — похвала по центру поля
             if (_turnCombo.IsPraiseStep)
             {
@@ -61,6 +67,7 @@ namespace GameStateMachine.States
                 _scorePopups.ShowPraise(_gameBoard.transform.TransformPoint(center), PraiseText);
             }
 
+            CreateRockets();
             await RemoveTiles(_matchFinder.TilesToRemove, _grid);
             _stateSwitcher.SwichState<RefillGridState>();
         }
@@ -81,6 +88,75 @@ namespace GameStateMachine.States
             var sum = Vector3.zero;
             foreach (var tile in result.ConnectedTiles) sum += tile.transform.position;
             return sum / Mathf.Max(1, result.ConnectedTiles.Count);
+        }
+
+        private Vector3 CellWorld(Vector2Int cell) =>
+            _gameBoard.transform.TransformPoint(_grid.GridToWorld(cell.x, cell.y));
+
+        private const float RocketPunch = 0.35f;
+
+        // 4 в ряд: одна фишка группы остаётся на месте и становится ракетой
+        private void CreateRockets()
+        {
+            foreach (var (tile, special) in _matchFinder.RocketsToCreate)
+            {
+                tile.SetMatched(false);
+                tile.SetSpecial(special);
+                _animation.DoPunchAnimate(tile.gameObject, Vector3.one * RocketPunch, 0.35f);
+            }
+        }
+
+        // Ракеты вылетают; фишки на их пути исчезают, когда до них долетает ракета.
+        // Возвращает задержку исчезновения для каждой задетой фишки.
+        private Dictionary<Tile, float> LaunchRockets()
+        {
+            var delays = new Dictionary<Tile, float>();
+            if (_matchFinder.RocketBlasts.Count == 0) return delays;
+
+            _audioManager.PlayWhoosh();
+            var originDelay = new Dictionary<Vector2Int, float>();
+            foreach (var blast in _matchFinder.RocketBlasts)
+            {
+                // Ракета, задетая другой ракетой, стартует, когда до неё долетели
+                originDelay.TryGetValue(blast.Origin, out float start);
+                var color = Color.white;
+                var originTile = _grid.GetValue(blast.Origin.x, blast.Origin.y);
+                if (originTile != null) color = TileColor(originTile);
+                LaunchAfter(start, blast.Origin, blast.Special, color).Forget();
+
+                foreach (var tile in blast.Cleared)
+                {
+                    var cell = _grid.WorldToGrid(tile.transform.localPosition);
+                    int distance = Mathf.Abs(cell.x - blast.Origin.x) + Mathf.Abs(cell.y - blast.Origin.y);
+                    float delay = start + RocketFlightFX.DelayFor(distance);
+                    if (!delays.TryGetValue(tile, out var existing) || delay < existing) delays[tile] = delay;
+                    if (SpecialTiles.IsRocket(tile.Special) && !originDelay.ContainsKey(cell)) originDelay[cell] = delay;
+                }
+            }
+            return delays;
+        }
+
+        private async UniTaskVoid LaunchAfter(float delay, Vector2Int origin, TileSpecial special, Color color)
+        {
+            if (delay > 0f)
+            {
+                bool cancelled = await UniTask.Delay(TimeSpan.FromSeconds(delay), cancellationToken: _gameBoard.destroyCancellationToken)
+                    .SuppressCancellationThrow();
+                if (cancelled) return;
+            }
+            RocketFlightFX.Play(_gameBoard.transform, origin, special, _grid.Width, _grid.Height, color);
+        }
+
+        private async UniTask PopOutAfter(Tile tile, float delay)
+        {
+            if (delay > 0f)
+            {
+                bool cancelled = await UniTask.Delay(TimeSpan.FromSeconds(delay), cancellationToken: _gameBoard.destroyCancellationToken)
+                    .SuppressCancellationThrow();
+                if (cancelled || tile == null) return;
+            }
+            _fxPool.PlayFX(tile.transform.position, _gameBoard.transform, TileColor(tile));
+            await _animation.PopOut(tile.gameObject, PopDuration);
         }
 
         private const float PopDuration = 0.22f;
@@ -115,13 +191,15 @@ namespace GameStateMachine.States
             PlayGroupSounds();
             PlayBigExplosions();
 
+            var delays = LaunchRockets();
+
             var animations = new List<UniTask>(tilesToRemove.Count);
             foreach (var tile in tilesToRemove)
             {
-                var position = grid.WorldToGrid(tile.transform.position);
+                var position = grid.WorldToGrid(tile.transform.localPosition);
                 grid.SetValue(position.x, position.y, null);
-                _fxPool.PlayFX(tile.transform.position, _gameBoard.transform, TileColor(tile));
-                animations.Add(_animation.PopOut(tile.gameObject, PopDuration));
+                delays.TryGetValue(tile, out float delay);
+                animations.Add(PopOutAfter(tile, delay));
             }
 
             await UniTask.WhenAll(animations);
