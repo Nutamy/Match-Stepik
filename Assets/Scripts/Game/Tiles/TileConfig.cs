@@ -14,8 +14,11 @@ namespace Game.Tiles
         [SerializeField] private Sprite _sprite;
         [SerializeField] private TileKind _tileKind;
         [SerializeField] private bool _isInteractable;
+        [Tooltip("Цвет частиц, когда фишка собрана")]
+        [SerializeField] private Color _fxColor = Color.white;
 
         public Sprite Sprite => _sprite;
+        public Color FxColor => _fxColor;
         public TileKind TileKind => _tileKind;
         public bool IsInteractable => _isInteractable;
     }

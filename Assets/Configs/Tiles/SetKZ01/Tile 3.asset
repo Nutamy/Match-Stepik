@@ -15,3 +15,4 @@ MonoBehaviour:
   _sprite: {fileID: 21300000, guid: c031b26bea1d33149a34e47267764082, type: 3}
   _tileKind: 0
   _isInteractable: 1
+  _fxColor: {r: 0.03, g: 0.62, b: 0.9, a: 1}

@@ -96,17 +96,31 @@ namespace GameStateMachine.States
                 _audioManager.PlayGroup(order[i], pitch, i * CascadeSound.GroupStagger);
         }
 
+        private static Color TileColor(Tile tile) => tile.TileConfig != null ? tile.TileConfig.FxColor : Color.white;
+
+        // 4, 5 в ряд и пересечение — большой взрыв в центре группы поверх обычных вспышек
+        private void PlayBigExplosions()
+        {
+            foreach (var result in _matchFinder.AllMatchResults)
+            {
+                if (!TileFXStyle.IsBig(result.Direction) || result.ConnectedTiles.Count == 0) continue;
+                _fxPool.PlayFX(GroupCenter(result), _gameBoard.transform,
+                    TileColor(result.ConnectedTiles[0]), TileFXStyle.BigScale(result.Direction));
+            }
+        }
+
         // Все совпавшие фишки исчезают одновременно
         private async UniTask RemoveTiles(List<Tile> tilesToRemove, Grid grid)
         {
             PlayGroupSounds();
+            PlayBigExplosions();
 
             var animations = new List<UniTask>(tilesToRemove.Count);
             foreach (var tile in tilesToRemove)
             {
                 var position = grid.WorldToGrid(tile.transform.position);
                 grid.SetValue(position.x, position.y, null);
-                _fxPool.GetFXFromPool(tile.transform.position, _gameBoard.transform);
+                _fxPool.PlayFX(tile.transform.position, _gameBoard.transform, TileColor(tile));
                 animations.Add(_animation.PopOut(tile.gameObject, PopDuration));
             }
 
