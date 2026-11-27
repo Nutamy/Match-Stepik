@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -32,30 +32,66 @@ namespace Game.MatchTiles
             for (int y = 0; y < height; y++)
                 if (original[x, y] != null) cells.Add(new Vector2Int(x, y));
 
-            var sources = new List<Vector2Int>(cells);
+            var pool = new List<Vector2Int>(cells.Count);
             var keys = new object[width, height];
+            var map = new Dictionary<Vector2Int, Vector2Int>(cells.Count);
 
             for (int attempt = 0; attempt < attempts; attempt++)
             {
-                for (int i = sources.Count - 1; i > 0; i--)
+                // Случайный порядок фишек, затем раскладка по клеткам без образования троек
+                pool.Clear();
+                pool.AddRange(cells);
+                for (int i = pool.Count - 1; i > 0; i--)
                 {
                     int j = random.Next(i + 1);
-                    (sources[i], sources[j]) = (sources[j], sources[i]);
+                    (pool[i], pool[j]) = (pool[j], pool[i]);
                 }
 
                 Array.Clear(keys, 0, keys.Length);
-                for (int i = 0; i < cells.Count; i++)
-                    keys[cells[i].x, cells[i].y] = original[sources[i].x, sources[i].y];
+                map.Clear();
+                bool placedAll = true;
+                foreach (var cell in cells)
+                {
+                    int pick = -1;
+                    for (int i = 0; i < pool.Count; i++)
+                    {
+                        var key = original[pool[i].x, pool[i].y];
+                        if (!CreatesLineWithPlaced((x, y) => keys[x, y], width, height, cell.x, cell.y, key))
+                        {
+                            pick = i;
+                            break;
+                        }
+                    }
 
-                if (MatchGrouping.FindGroups(width, height, (x, y) => keys[x, y]).Count > 0) continue;
-                if (!TryFindMove(keys, out _, out _)) continue;
+                    if (pick < 0)
+                    {
+                        placedAll = false;
+                        break;
+                    }
 
-                var map = new Dictionary<Vector2Int, Vector2Int>(cells.Count);
-                for (int i = 0; i < cells.Count; i++) map[cells[i]] = sources[i];
-                return map;
+                    var source = pool[pick];
+                    pool.RemoveAt(pick);
+                    keys[cell.x, cell.y] = original[source.x, source.y];
+                    map[cell] = source;
+                }
+
+                if (!placedAll || !TryFindMove(keys, out _, out _)) continue;
+                return new Dictionary<Vector2Int, Vector2Int>(map);
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Даст ли фишка key тройку с двумя уже разложенными соседями слева или снизу.
+        /// Раскладка идёт по столбцам слева направо и снизу вверх, поэтому этих соседей достаточно.
+        /// </summary>
+        public static bool CreatesLineWithPlaced(Func<int, int, object> getKey, int width, int height, int x, int y, object key)
+        {
+            if (key == null) return false;
+            if (x >= 2 && Equals(getKey(x - 1, y), key) && Equals(getKey(x - 2, y), key)) return true;
+            if (y >= 2 && Equals(getKey(x, y - 1), key) && Equals(getKey(x, y - 2), key)) return true;
+            return false;
         }
 
         private static object[,] Snapshot(int width, int height, Func<int, int, object> getKey)

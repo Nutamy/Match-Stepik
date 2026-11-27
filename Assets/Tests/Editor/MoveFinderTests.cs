@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using Game.MatchTiles;
 using NUnit.Framework;
 using UnityEngine;
@@ -96,6 +96,45 @@ namespace Tests.Editor
             Assert.IsNotNull(map);
             Assert.IsFalse(map.ContainsKey(new Vector2Int(0, 3)));
             Assert.IsFalse(map.Values.Contains(new Vector2Int(5, 2)));
+        }
+
+        [Test]
+        public void Shuffle_LargeBoardWithHole_AlwaysPlayableWithoutMatches()
+        {
+            // 9x9, 4 типа, пустой квадрат 3x3 в центре — как уровень со скриншота.
+            // Случайная перестановка почти никогда не обходится без троек, поэтому раскладка должна быть построена.
+            const int size = 9;
+            for (int seed = 0; seed < 50; seed++)
+            {
+                var rng = new System.Random(seed);
+                var colors = new object[size, size];
+                for (int x = 0; x < size; x++)
+                for (int y = 0; y < size; y++)
+                {
+                    bool hole = x >= 3 && x <= 5 && y >= 3 && y <= 5;
+                    colors[x, y] = hole ? null : (object)"abcd"[rng.Next(4)];
+                }
+                System.Func<int, int, object> original = (x, y) => colors[x, y];
+
+                var map = MoveFinder.TryShuffle(size, size, original, rng);
+                Assert.IsNotNull(map, $"seed {seed}");
+
+                System.Func<int, int, object> shuffled = (x, y) =>
+                    map.TryGetValue(new Vector2Int(x, y), out var source) ? original(source.x, source.y) : null;
+                Assert.IsEmpty(MatchGrouping.FindGroups(size, size, shuffled), $"seed {seed}");
+                Assert.IsTrue(MoveFinder.HasPossibleMove(size, size, shuffled), $"seed {seed}");
+            }
+        }
+
+        [Test]
+        public void CreatesLineWithPlaced_DetectsLeftAndBelowPairs()
+        {
+            var rows = new[] { "a..", "a..", "bb." };
+            var keys = Keys(rows);
+            Assert.IsTrue(MoveFinder.CreatesLineWithPlaced(keys, 3, 3, 2, 0, 'b'));
+            Assert.IsFalse(MoveFinder.CreatesLineWithPlaced(keys, 3, 3, 2, 0, 'a'));
+            Assert.IsFalse(MoveFinder.CreatesLineWithPlaced(keys, 3, 3, 0, 0, 'a'));
+            Assert.IsTrue(MoveFinder.CreatesLineWithPlaced((x, y) => x == 0 && y < 2 ? (object)'a' : null, 3, 3, 0, 2, 'a'));
         }
 
         [Test]

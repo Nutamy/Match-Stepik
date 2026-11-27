@@ -46,8 +46,8 @@ namespace Game.Board
                 FillBoard();
                 counter++;
             }
+            if (_matchFinder.CheckBoardForMatches(_grid) || !HasPossibleMove()) ArrangeWithoutAnimation();
             _matchFinder.ClearTilesToRemove();
-            if (!HasPossibleMove()) ArrangeWithoutAnimation();
             Debug.Log("Board has been generated " + counter + " times");
             RevealTiles();
         }
@@ -95,19 +95,30 @@ namespace Game.Board
                 return moved;
             }
 
-            // Перестановок не хватило: перекрашиваем фишки, пока поле не станет играбельным
+            // Перестановок не хватило: перекрашиваем фишки без троек, пока не появится ход
             for (int attempt = 0; attempt < MaxBoardGenerations; attempt++)
             {
                 for (int x = 0; x < _grid.Width; x++)
                 for (int y = 0; y < _grid.Height; y++)
                 {
                     var tile = _grid.GetValue(x, y);
-                    if (MatchFinder.GetMatchKey(tile) != null) tile.SetTileConfig(_tilePool.GetRandomTileConfig());
+                    if (MatchFinder.GetMatchKey(tile) == null) continue;
+                    tile.SetTileConfig(_tilePool.GetRandomTileConfig());
+                    AvoidLineWithPlaced(tile, x, y);
                 }
 
-                if (MatchGrouping.FindGroups(_grid.Width, _grid.Height, GetKey).Count == 0 && HasPossibleMove()) break;
+                if (HasPossibleMove()) break;
             }
             return moved;
+        }
+
+        private void AvoidLineWithPlaced(Tile tile, int x, int y)
+        {
+            const int maxRerolls = 50;
+            for (int i = 0; i < maxRerolls && MoveFinder.CreatesLineWithPlaced(GetKey, _grid.Width, _grid.Height, x, y, MatchFinder.GetMatchKey(tile)); i++)
+            {
+                tile.SetTileConfig(_tilePool.GetRandomTileConfig());
+            }
         }
 
         private object GetKey(int x, int y) => MatchFinder.GetMatchKey(_grid.GetValue(x, y));
@@ -137,6 +148,9 @@ namespace Game.Board
                     else 
                     {
                         var tile = _tilePool.GetTile(_grid.GridToWorld(x, y), transform);
+                        // Сразу подбираем тип без тройки с соседями слева и снизу:
+                        // стартовое поле никогда не содержит готовых совпадений
+                        AvoidLineWithPlaced(tile, x, y);
                         _grid.SetValue(x,y,tile);
                         tile.gameObject.SetActive(true);
                         _tilesToRefill.Add(tile);
