@@ -26,6 +26,15 @@ namespace Audio
         [SerializeField] private AudioClip _win;
         [SerializeField] private AudioClip _lose;
         [SerializeField] private AudioClip _whoosh;
+
+        [Header("Cascade group sounds")]
+        [SerializeField] private AudioClip _matchFour;
+        [SerializeField] private AudioClip _matchFive;
+        [SerializeField] private AudioClip _matchCross;
+
+        // Свой источник на каждую группу шага: у PlayOneShot один pitch на источник
+        private readonly List<AudioSource> _groupSources = new List<AudioSource>();
+        private int _nextGroupSource;
         
         // game Data
 
@@ -41,6 +50,52 @@ namespace Audio
         public void PlayWin() => PlayNormalPitch(_win);
         public void PlayLose() => PlayNormalPitch(_lose);
         public void PlayWhoosh() => PlayRandomPitch(_whoosh);
+
+        /// <summary>
+        /// Один звук на группу совпадения. Тон зависит от шага каскада, delay — сдвиг внутри шага.
+        /// </summary>
+        public void PlayGroup(GroupSound sound, float pitch, float delay)
+        {
+            var clip = ClipFor(sound);
+            if (clip == null) return;
+
+            var source = NextGroupSource();
+            source.Stop();
+            source.clip = clip;
+            source.pitch = pitch;
+            source.PlayDelayed(delay);
+        }
+
+        private AudioClip ClipFor(GroupSound sound)
+        {
+            switch (sound)
+            {
+                case GroupSound.Four: return _matchFour != null ? _matchFour : _remove;
+                case GroupSound.Five: return _matchFive != null ? _matchFive : _remove;
+                case GroupSound.Cross: return _matchCross != null ? _matchCross : _remove;
+                default: return _remove;
+            }
+        }
+
+        private AudioSource NextGroupSource()
+        {
+            if (_groupSources.Count < CascadeSound.MaxSoundsPerStep)
+            {
+                var go = new GameObject($"GroupSound{_groupSources.Count}");
+                go.transform.SetParent(transform, false);
+                var source = go.AddComponent<AudioSource>();
+                source.playOnAwake = false;
+                source.outputAudioMixerGroup = _pitchSoundSource.outputAudioMixerGroup;
+                source.volume = _pitchSoundSource.volume;
+                source.spatialBlend = 0f;
+                _groupSources.Add(source);
+                return source;
+            }
+
+            var next = _groupSources[_nextGroupSource];
+            _nextGroupSource = (_nextGroupSource + 1) % _groupSources.Count;
+            return next;
+        }
         
 
         public void SetSoundVolume()
