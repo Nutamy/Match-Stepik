@@ -8,10 +8,16 @@ namespace Game.Tiles
     /// </summary>
     public static class SpecialSprites
     {
-        // Assets/Resources/Specials/RocketFlight.png — ракета носом вправо: и фишка-ракета, и летящая ракета
+        // Assets/Resources/Specials/Rocket.png — ракета на поле вместо фишки, носом вправо
+        private const string RocketPath = "Specials/Rocket";
+        // Assets/Resources/Specials/RocketFlight.png — летящая ракета, носом вправо
         private const string RocketFlightPath = "Specials/RocketFlight";
 
+        private static Sprite _rocket;
         private static Sprite _rocketFlight;
+
+        // Без своей картинки фишка-ракета берёт картинку летящей ракеты
+        public static Sprite Rocket => _rocket != null ? _rocket : (_rocket = Resources.Load<Sprite>(RocketPath) ?? RocketFlight);
 
         public static Sprite RocketFlight => _rocketFlight != null
             ? _rocketFlight

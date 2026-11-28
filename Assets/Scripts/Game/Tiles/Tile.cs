@@ -37,7 +37,7 @@ namespace Game.Tiles
 
             // Ракета рисуется вместо фишки: одна ракета носом туда, куда полетит
             var overlay = GetSpecialRenderer();
-            overlay.sprite = SpecialSprites.RocketFlight;
+            overlay.sprite = SpecialSprites.Rocket;
             // Картинка смотрит вправо; вертикальная ракета — та же картинка носом вверх
             overlay.transform.localRotation = Quaternion.Euler(0f, 0f, special == TileSpecial.RocketVertical ? 90f : 0f);
             FitOverlay(overlay);
@@ -60,7 +60,7 @@ namespace Game.Tiles
         }
 
         // Ракета по длине занимает OverlayFill от размера фишки независимо от разрешения картинки
-        private const float OverlayFill = 1f;
+        private const float OverlayFill = 0.95f;
 
         private void FitOverlay(SpriteRenderer overlay)
         {
