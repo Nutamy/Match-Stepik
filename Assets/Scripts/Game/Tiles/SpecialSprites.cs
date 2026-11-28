@@ -4,7 +4,7 @@ namespace Game.Tiles
 {
     /// <summary>
     /// Картинки особых фишек. Если в Resources/Specials лежит готовая графика, берётся она,
-    /// иначе рисуется временная заглушка с тёмным контуром: стрелка для ракеты, круг для бомбы.
+    /// иначе рисуется временная заглушка с тёмным контуром: стрелка для ракеты, круг для бомб.
     /// </summary>
     public static class SpecialSprites
     {
@@ -16,7 +16,11 @@ namespace Game.Tiles
         // Assets/Resources/Specials/Bomb.png — бомба на поле вместо фишки
         private const string BombPath = "Specials/Bomb";
 
+        // Assets/Resources/Specials/ColorBomb.png — цветная бомба (5 в ряд)
+        private const string ColorBombPath = "Specials/ColorBomb";
+
         private static Sprite _bomb;
+        private static Sprite _colorBomb;
         private static Sprite _rocket;
         private static Sprite _rocketFlight;
 
@@ -25,6 +29,11 @@ namespace Game.Tiles
 
         // Без своей картинки бомба — круглая заглушка
         public static Sprite Bomb => _bomb != null ? _bomb : (_bomb = Resources.Load<Sprite>(BombPath) ?? CreateBall());
+
+        // Без своей картинки цветная бомба — круглая заглушка, как у бомбы
+        public static Sprite ColorBomb => _colorBomb != null
+            ? _colorBomb
+            : (_colorBomb = Resources.Load<Sprite>(ColorBombPath) ?? CreateBall());
 
         public static Sprite RocketFlight => _rocketFlight != null
             ? _rocketFlight

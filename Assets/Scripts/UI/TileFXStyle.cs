@@ -20,6 +20,10 @@ namespace UI
         public const float BombScale = 3.2f;
         // Бомба взрывается через столько секунд после того, как её задело или ею сходили
         public const float BombFuse = 0.12f;
+        // Вспышка цветной бомбы в её клетке
+        public const float ColorBombScale = 2.8f;
+        // Фишки цвета цветной бомбы исчезают волной: на столько секунд позже за каждую клетку расстояния
+        public const float ColorWaveStep = 0.035f;
 
         /// <summary>Нужен ли группе большой взрыв.</summary>
         public static bool IsBig(MatchDirection direction) => BigScale(direction) > TileScale;

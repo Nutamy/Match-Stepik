@@ -95,7 +95,7 @@ namespace GameStateMachine.States
 
         private const float RocketPunch = 0.35f;
 
-        // 4 в ряд и пересечение: одна фишка группы остаётся на месте и становится ракетой или бомбой
+        // 4, 5 в ряд и пересечение: одна фишка группы остаётся на месте и становится ракетой или бомбой
         private void CreateRockets()
         {
             foreach (var (tile, special) in _matchFinder.RocketsToCreate)
@@ -123,15 +123,19 @@ namespace GameStateMachine.States
                 var originTile = _grid.GetValue(blast.Origin.x, blast.Origin.y);
                 if (originTile != null) color = TileColor(originTile);
                 bool isBomb = SpecialTiles.IsBomb(blast.Special);
-                if (isBomb) ExplodeAfter(start + TileFXStyle.BombFuse, blast.Origin).Forget();
+                bool isColorBomb = SpecialTiles.IsColorBomb(blast.Special);
+                if (isBomb) ExplodeAfter(start + TileFXStyle.BombFuse, blast.Origin, BombColor, TileFXStyle.BombScale, GroupSound.Cross).Forget();
+                else if (isColorBomb) ExplodeAfter(start + TileFXStyle.BombFuse, blast.Origin, ColorBombColor, TileFXStyle.ColorBombScale, GroupSound.Five).Forget();
                 else LaunchAfter(start, blast.Origin, blast.Special, color).Forget();
 
                 foreach (var tile in blast.Cleared)
                 {
                     var cell = _grid.WorldToGrid(tile.transform.localPosition);
                     int distance = Mathf.Abs(cell.x - blast.Origin.x) + Mathf.Abs(cell.y - blast.Origin.y);
-                    // Бомба убирает весь квадрат разом, ракета — по мере полёта
-                    float delay = start + (isBomb ? TileFXStyle.BombFuse : RocketFlightFX.DelayFor(distance));
+                    // Бомба убирает весь квадрат разом, цветная бомба — волной от себя, ракета — по мере полёта
+                    float delay = start + (isBomb ? TileFXStyle.BombFuse
+                        : isColorBomb ? TileFXStyle.BombFuse + TileFXStyle.ColorWaveStep * distance
+                        : RocketFlightFX.DelayFor(distance));
                     if (!delays.TryGetValue(tile, out var existing) || delay < existing) delays[tile] = delay;
                     if (SpecialTiles.IsSpecial(tile.Special) && !originDelay.ContainsKey(cell)) originDelay[cell] = delay;
                 }
@@ -139,13 +143,13 @@ namespace GameStateMachine.States
             return delays;
         }
 
-        private async UniTaskVoid ExplodeAfter(float delay, Vector2Int origin)
+        private async UniTaskVoid ExplodeAfter(float delay, Vector2Int origin, Color color, float scale, GroupSound sound)
         {
             bool cancelled = await UniTask.Delay(TimeSpan.FromSeconds(delay), cancellationToken: _gameBoard.destroyCancellationToken)
                 .SuppressCancellationThrow();
             if (cancelled) return;
-            _fxPool.PlayFX(CellWorld(origin), _gameBoard.transform, BombColor, TileFXStyle.BombScale);
-            _audioManager.PlayGroup(GroupSound.Cross, CascadeSound.PitchForStep(_turnCombo.Step), 0f);
+            _fxPool.PlayFX(CellWorld(origin), _gameBoard.transform, color, scale);
+            _audioManager.PlayGroup(sound, CascadeSound.PitchForStep(_turnCombo.Step), 0f);
         }
 
         private async UniTaskVoid LaunchAfter(float delay, Vector2Int origin, TileSpecial special, Color color)
@@ -188,10 +192,13 @@ namespace GameStateMachine.States
         private static readonly Color RocketColor = new Color(1f, 0.78f, 0.3f);
         // Взрыв бомбы — огненно-оранжевый, как искра на фитиле
         private static readonly Color BombColor = new Color(1f, 0.55f, 0.2f);
+        // Цветная бомба — светлое золото, как её оправа; фишки вокруг вспыхивают каждая своим цветом
+        private static readonly Color ColorBombColor = new Color(1f, 0.92f, 0.55f);
 
         private static Color TileColor(Tile tile)
         {
             if (tile.Special == TileSpecial.Bomb) return BombColor;
+            if (tile.Special == TileSpecial.ColorBomb) return ColorBombColor;
             if (tile.Special != TileSpecial.None) return RocketColor;
             return tile.TileConfig != null ? tile.TileConfig.FxColor : Color.white;
         }

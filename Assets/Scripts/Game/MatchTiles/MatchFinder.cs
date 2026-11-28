@@ -10,7 +10,7 @@ namespace Game.MatchTiles
         public List<Tile> TilesToRemove { get; } = new List<Tile>();
         // Все совпадения за один ход: каждая группа начисляет очки отдельно
         public List<MatchResult> AllMatchResults { get; private set; } = new List<MatchResult>();
-        // Фишки, которые остаются на поле и становятся ракетами (4 в ряд) или бомбами (пересечение)
+        // Фишки, которые остаются на поле и становятся ракетами (4 в ряд), бомбами (пересечение) или цветными бомбами (5 в ряд)
         public List<(Tile Tile, TileSpecial Special)> RocketsToCreate { get; } = new List<(Tile, TileSpecial)>();
         // Сработавшие ракеты и бомбы: откуда и какие фишки убрали сверх совпадений
         public List<(Vector2Int Origin, TileSpecial Special, List<Tile> Cleared)> RocketBlasts { get; } =
@@ -27,7 +27,8 @@ namespace Game.MatchTiles
             var resolution = SpecialTiles.Resolve(grid.Width, grid.Height, groups,
                 (x, y) => SpecialAt(grid, x, y),
                 (x, y) => GetMatchKey(grid.GetValue(x, y)) != null,
-                moved, moved);
+                moved, moved,
+                (x, y) => ColorAt(grid, x, y));
             if (resolution.Remove.Count == 0) return false;
 
             foreach (var group in groups)
@@ -71,6 +72,14 @@ namespace Game.MatchTiles
         {
             var tile = grid.GetValue(x, y);
             return tile != null ? tile.Special : TileSpecial.None;
+        }
+
+        // Цвет обычной фишки для цветной бомбы; у особых и неподвижных фишек цвета нет
+        private static object ColorAt(Grid grid, int x, int y)
+        {
+            var tile = grid.GetValue(x, y);
+            if (tile == null || !tile.IsInteractable || tile.Special != TileSpecial.None) return null;
+            return tile.TileConfig;
         }
 
         public static object GetMatchKey(Tile tile)
