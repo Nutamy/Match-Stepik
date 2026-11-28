@@ -41,6 +41,7 @@ namespace Game.Tiles
             {
                 if (_tilePool[i].gameObject.activeInHierarchy) continue;
                 _tilePool[i].SetTileConfig(GetRandomTileConfig());
+                _tilePool[i].SetSpecial(Game.MatchTiles.TileSpecial.None);
                 _tilePool[i].gameObject.transform.position = position;
                 return _tilePool[i];
             }
