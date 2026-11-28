@@ -54,12 +54,6 @@ namespace GameStateMachine.States
                 _scorePopups.ShowPoints(GroupCenter(result), points);
             }
 
-            foreach (var blast in _matchFinder.RocketBlasts)
-            {
-                int points = _scoreCalculator.AddRocketScore(blast.Cleared.Count);
-                if (points > 0) _scorePopups.ShowPoints(CellWorld(blast.Origin), points);
-            }
-
             // Длинный каскад — похвала по центру поля
             if (_turnCombo.IsPraiseStep)
             {
@@ -132,7 +126,8 @@ namespace GameStateMachine.States
 
                 if (SpecialTiles.IsColorBomb(blast.Special))
                 {
-                    ScheduleColorBomb(blast.Origin, originTile, blast.Cleared, start, converted, delays, originDelay);
+                    float done = ScheduleColorBomb(blast.Origin, originTile, blast.Cleared, start, converted, delays, originDelay);
+                    ScoreBlastAfter(done, blast.Origin, blast.Cleared.Count);
                     continue;
                 }
 
@@ -152,23 +147,38 @@ namespace GameStateMachine.States
                     LaunchAfter(start, blast.Origin, blast.Special, color).Forget();
                 }
 
+                float finish = start + (isBomb ? TileFXStyle.BombFuse : 0f);
                 foreach (var tile in blast.Cleared)
                 {
                     var cell = _grid.WorldToGrid(tile.transform.localPosition);
                     int distance = Mathf.Abs(cell.x - blast.Origin.x) + Mathf.Abs(cell.y - blast.Origin.y);
                     // Бомба убирает весь квадрат разом, ракета — по мере полёта
                     float delay = start + (isBomb ? TileFXStyle.BombFuse : RocketFlightFX.DelayFor(distance));
+                    finish = Mathf.Max(finish, delay);
                     if (!delays.TryGetValue(tile, out var existing) || delay < existing) delays[tile] = delay;
                     if (origins.Contains(cell) && !originDelay.ContainsKey(cell)) originDelay[cell] = delay;
                 }
+                ScoreBlastAfter(finish, blast.Origin, blast.Cleared.Count);
             }
             return delays;
+        }
+
+        // Очки за ракету или бомбу: начисляются и всплывают над её клеткой, когда исчезла последняя задетая ею фишка
+        private void ScoreBlastAfter(float finish, Vector2Int origin, int clearedTiles)
+        {
+            if (clearedTiles == 0) return;
+            After(finish + PopDuration * 0.5f, () =>
+            {
+                int points = _scoreCalculator.AddRocketScore(clearedTiles);
+                if (points > 0) _scorePopups.ShowPoints(CellWorld(origin), points);
+            }).Forget();
         }
 
         // Цветная бомба: крутится, потом по одной искре к каждой своей фишке, от ближних к дальним.
         // Долетела искра — фишка исчезает или (комбо) становится ракетой или бомбой.
         // Когда долетела последняя, бомба исчезает, а после паузы превращённые фишки срабатывают по очереди.
-        private void ScheduleColorBomb(Vector2Int origin, Tile bombTile, List<Tile> cleared, float start,
+        // Возвращает, когда долетела последняя искра.
+        private float ScheduleColorBomb(Vector2Int origin, Tile bombTile, List<Tile> cleared, float start,
             Dictionary<Tile, TileSpecial> converted, Dictionary<Tile, float> delays, Dictionary<Vector2Int, float> originDelay)
         {
             int count = cleared.Count;
@@ -220,6 +230,7 @@ namespace GameStateMachine.States
                     delays[tile] = arrival;
                 }
             }
+            return lastArrival;
         }
 
         // Сколько превращений в комбо озвучивать: дальше звуки сливаются в шум
