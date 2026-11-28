@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Threading;
 using Animations;
 using Audio;
+using Cysharp.Threading.Tasks;
+using DG.Tweening;
+using Game.Board;
 using Game.Tiles;
 using Input;
 using UnityEngine;
@@ -17,17 +21,34 @@ namespace GameStateMachine.States
         private readonly Camera _camera;
         private IAnimation _animation;
         private AudioManager _audioManager;
+        private readonly GameBoard _gameBoard;
 
         // Порог свайпа в клетках поля: меньше — это нажатие, больше — обмен с соседом
         private const float SwipeThreshold = 0.4f;
+
+        // Подсказка: через HintDelay секунд без касаний две фишки хода тянутся навстречу друг другу
+        private const float HintDelay = 5f;
+        private const float HintPullDistance = 0.22f;   // в клетках
+        private const float HintPullDuration = 0.36f;   // туда и обратно
+        private const float HintPause = 1.1f;
+
+        // Двойное касание ракеты запускает её без хода-обмена
+        private const float DoubleTapTime = 0.35f;
+        private Vector2Int _lastTapCell = Vector2Int.one * -1;
+        private float _lastTapTime = -1f;
+
+        private CancellationTokenSource _hintCts;
+        private Tween _hintPullA;
+        private Tween _hintPullB;
 
         private bool _isPressed;
         private bool _pressedOnSelected;
         private Vector2Int _pressCell;
         private Vector2 _pressWorld;
 
-        public PlayerTurnState(Grid grid, IStateSwitcher stateSwitcher, IAnimation animation, AudioManager audioManager)
+        public PlayerTurnState(Grid grid, IStateSwitcher stateSwitcher, IAnimation animation, AudioManager audioManager, GameBoard gameBoard)
         {
+            _gameBoard = gameBoard;
             _inputReader =  new InputReader();
             _grid = grid;
             _stateSwitcher = stateSwitcher;
@@ -43,9 +64,18 @@ namespace GameStateMachine.States
 
         private void OnPointerDown()
         {
+            // Любое касание убирает подсказку и заново запускает отсчёт бездействия
+            RestartHintTimer();
+
             var world = PointerWorld();
             var cell = _grid.WorldToGrid(world);
             if (!IsPlayable(cell)) return;
+
+            if (IsDoubleTap(cell) && IsRocket(cell))
+            {
+                Activate(cell);
+                return;
+            }
 
             var selected = _grid.CurrentPosition;
             // Два нажатия: выбрана фишка, нажали соседнюю — меняем
@@ -118,22 +148,84 @@ namespace GameStateMachine.States
             _stateSwitcher.SwichState<SwapTilesState>();
         }
 
+        private bool IsDoubleTap(Vector2Int cell)
+        {
+            float now = Time.unscaledTime;
+            bool isDouble = cell == _lastTapCell && now - _lastTapTime <= DoubleTapTime;
+            // Третье касание подряд не считается вторым двойным
+            _lastTapCell = isDouble ? _emptyPosition : cell;
+            _lastTapTime = now;
+            return isDouble;
+        }
+
+        private bool IsRocket(Vector2Int cell) =>
+            Game.MatchTiles.SpecialTiles.IsRocket(_grid.GetValue(cell.x, cell.y).Special);
+
+        private void Activate(Vector2Int cell)
+        {
+            _isPressed = false;
+            if (_grid.CurrentPosition != _emptyPosition)
+            {
+                _animation.AnimateTile(_grid.GetValue(_grid.CurrentPosition.x, _grid.CurrentPosition.y), 1f);
+            }
+
+            _grid.SetCurrentPosition(cell);
+            _grid.SetTargetPosition(cell);
+            _stateSwitcher.SwichState<SwapTilesState>();
+        }
+
         private bool IsPlayable(Vector2Int cell) => IsValidPosition(cell) && !IsBlankPosition(cell);
 
         public void Enter()
         {
             _isPressed = false;
+            _lastTapCell = _emptyPosition;
             _inputReader.EnableInputs(true);
             DeselectTile();
+            RestartHintTimer();
         }
 
         public void Exit()
         {
             _inputReader.EnableInputs(false);
+            CancelHint();
+        }
+
+        private void RestartHintTimer()
+        {
+            CancelHint();
+            _hintCts = new CancellationTokenSource();
+            ShowHintAfterDelay(_hintCts.Token).Forget();
+        }
+
+        private async UniTaskVoid ShowHintAfterDelay(CancellationToken token)
+        {
+            bool cancelled = await UniTask.Delay(TimeSpan.FromSeconds(HintDelay), cancellationToken: token)
+                .SuppressCancellationThrow();
+            if (cancelled || !_gameBoard.TryFindMove(out var from, out var to)) return;
+
+            var direction = to - from;
+            _hintPullA = _animation.HintPull(_grid.GetValue(from.x, from.y), _grid.GridToWorld(from.x, from.y),
+                direction, HintPullDistance, HintPullDuration, HintPause);
+            _hintPullB = _animation.HintPull(_grid.GetValue(to.x, to.y), _grid.GridToWorld(to.x, to.y),
+                -direction, HintPullDistance, HintPullDuration, HintPause);
+        }
+
+        private void CancelHint()
+        {
+            _hintCts?.Cancel();
+            _hintCts?.Dispose();
+            _hintCts = null;
+
+            // Kill возвращает фишки ровно в их клетки и прежний размер
+            _hintPullA?.Kill();
+            _hintPullB?.Kill();
+            _hintPullA = _hintPullB = null;
         }
 
         public void Dispose()
         {
+            CancelHint();
             _inputReader.PointerDown -= OnPointerDown;
             _inputReader.PointerMoved -= OnPointerMoved;
             _inputReader.PointerUp -= OnPointerUp;

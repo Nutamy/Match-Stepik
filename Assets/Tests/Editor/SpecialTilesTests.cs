@@ -1,0 +1,186 @@
+using System.Collections.Generic;
+using System.Linq;
+using Game.MatchTiles;
+using NUnit.Framework;
+using UnityEngine;
+
+namespace Tests.Editor
+{
+    public class SpecialTilesTests
+    {
+        // Строки сверху вниз. '.' — пустая клетка; '#' — неподвижная клетка уровня;
+        // строчная буква — обычная фишка; H — горизонтальная ракета (убирает строку),
+        // V — вертикальная (убирает столбец). У ракеты нет цвета: её ключ уникален, в линии она не собирается.
+        private class Board
+        {
+            private readonly string[] _rows;
+            public int Width => _rows[0].Length;
+            public int Height => _rows.Length;
+
+            public Board(params string[] rows) => _rows = rows;
+
+            private char At(int x, int y) => _rows[Height - 1 - y][x];
+
+            public object Key(int x, int y)
+            {
+                char c = At(x, y);
+                if (c == '.' || c == '#') return null;
+                if (c == 'H' || c == 'V') return new Vector2Int(x, y);
+                return c;
+            }
+
+            public TileSpecial Special(int x, int y)
+            {
+                switch (At(x, y))
+                {
+                    case 'H': return TileSpecial.RocketHorizontal;
+                    case 'V': return TileSpecial.RocketVertical;
+                    default: return TileSpecial.None;
+                }
+            }
+
+            public bool Clearable(int x, int y) => Key(x, y) != null;
+
+            public SpecialResolution Resolve(IList<Vector2Int> moved = null, IList<Vector2Int> forced = null)
+            {
+                var groups = MatchGrouping.FindGroups(Width, Height, Key);
+                return SpecialTiles.Resolve(Width, Height, groups, Special, Clearable, moved, forced);
+            }
+        }
+
+        private static Vector2Int C(int x, int y) => new Vector2Int(x, y);
+
+        [Test]
+        public void FourInRow_HorizontalLine_GivesVerticalRocket()
+        {
+            Assert.AreEqual(TileSpecial.RocketVertical, SpecialTiles.RocketFor(MatchDirection.LongHorizontal));
+            Assert.AreEqual(TileSpecial.RocketHorizontal, SpecialTiles.RocketFor(MatchDirection.LongVertical));
+            Assert.AreEqual(TileSpecial.None, SpecialTiles.RocketFor(MatchDirection.Horizontal));
+            Assert.AreEqual(TileSpecial.None, SpecialTiles.RocketFor(MatchDirection.FiveInARow));
+            Assert.AreEqual(TileSpecial.None, SpecialTiles.RocketFor(MatchDirection.Multiply));
+        }
+
+        [Test]
+        public void FourInRow_LeavesOneTileAsRocket_AndRemovesThree()
+        {
+            var r = new Board("baaaab").Resolve();
+
+            Assert.AreEqual(1, r.Spawns.Count);
+            Assert.AreEqual(TileSpecial.RocketVertical, r.Spawns[0].Special);
+            Assert.AreEqual(3, r.Remove.Count);
+            Assert.That(r.Remove, Has.No.Member(r.Spawns[0].Cell));
+            Assert.IsEmpty(r.Blasts);
+        }
+
+        [Test]
+        public void PlayerMove_RocketAppearsWhereTileWasMoved()
+        {
+            var r = new Board("baaaab").Resolve(moved: new[] { C(3, 0), C(3, 1) });
+            Assert.AreEqual(C(3, 0), r.Spawns[0].Cell);
+        }
+
+        [Test]
+        public void ThreeInRow_GivesNoRocket()
+        {
+            var r = new Board("baaab").Resolve();
+            Assert.IsEmpty(r.Spawns);
+            Assert.AreEqual(3, r.Remove.Count);
+        }
+
+        [Test]
+        public void Rocket_HasNoColor_AndDoesNotMatch()
+        {
+            var r = new Board("aHa").Resolve();
+            Assert.IsEmpty(r.Remove);
+        }
+
+        [Test]
+        public void HorizontalRocket_ClearsWholeRow()
+        {
+            var r = new Board(
+                "bcdbc",
+                "aHacd",
+                "cdbcb").Resolve(forced: new[] { C(1, 1) });
+
+            CollectionAssert.AreEquivalent(new[] { C(0, 1), C(1, 1), C(2, 1), C(3, 1), C(4, 1) }, r.Remove);
+            Assert.AreEqual(1, r.Blasts.Count);
+            Assert.AreEqual(C(1, 1), r.Blasts[0].Origin);
+            Assert.AreEqual(4, r.Blasts[0].Cleared.Count);
+        }
+
+        [Test]
+        public void VerticalRocket_ClearsWholeColumn()
+        {
+            var r = new Board(
+                "bcd",
+                "dce",
+                "aVa",
+                "cdb").Resolve(forced: new[] { C(1, 1) });
+
+            CollectionAssert.AreEquivalent(new[] { C(1, 0), C(1, 1), C(1, 2), C(1, 3) }, r.Remove);
+        }
+
+        [Test]
+        public void Rocket_DoesNotClearFixedCells()
+        {
+            var r = new Board("aHa#bc").Resolve(forced: new[] { C(1, 0) });
+            Assert.That(r.Remove, Has.No.Member(C(3, 0)));
+            Assert.That(r.Remove, Has.Member(C(4, 0)));
+            Assert.That(r.Remove, Has.Member(C(5, 0)));
+        }
+
+        [Test]
+        public void RocketHitByRocket_FiresToo()
+        {
+            // Горизонтальная ракета в средней строке задевает вертикальную в столбце 4
+            var r = new Board(
+                "bcdbc",
+                "cHabV",
+                "cdbcb").Resolve(forced: new[] { C(1, 1) });
+
+            Assert.AreEqual(2, r.Blasts.Count);
+            Assert.That(r.Remove, Has.Member(C(4, 2)));
+            Assert.That(r.Remove, Has.Member(C(4, 0)));
+            Assert.AreEqual(7, r.Remove.Count);
+        }
+
+        [Test]
+        public void MovedRocket_FiresWithoutMatch()
+        {
+            var board = new Board(
+                "bcd",
+                "cHb",
+                "dbc");
+            Assert.IsEmpty(board.Resolve().Remove);
+
+            var r = board.Resolve(moved: new[] { C(1, 1), C(1, 0) }, forced: new[] { C(1, 1), C(1, 0) });
+            CollectionAssert.AreEquivalent(new[] { C(0, 1), C(1, 1), C(2, 1) }, r.Remove);
+            Assert.AreEqual(1, r.Blasts.Count);
+        }
+
+        [Test]
+        public void NewRocket_SurvivesBlastOfOldRocket()
+        {
+            // Вертикальная четвёрка 'a' в столбце 0 даёт ракету во второй клетке (0,1);
+            // в тот же шаг срабатывает ракета H в строке 1 и не задевает новую ракету
+            var r = new Board(
+                "ab",
+                "ac",
+                "aH",
+                "ac").Resolve(forced: new[] { C(1, 1) });
+
+            Assert.AreEqual(1, r.Spawns.Count);
+            Assert.AreEqual(C(0, 1), r.Spawns[0].Cell);
+            Assert.That(r.Remove, Has.No.Member(C(0, 1)));
+            Assert.AreEqual(1, r.Blasts.Count);
+            Assert.IsEmpty(r.Blasts[0].Cleared);
+        }
+
+        [Test]
+        public void Line_GoesFromNearToFar()
+        {
+            var cells = SpecialTiles.Line(C(1, 0), TileSpecial.RocketHorizontal, 5, 1).ToList();
+            CollectionAssert.AreEqual(new[] { C(0, 0), C(2, 0), C(3, 0), C(4, 0) }, cells);
+        }
+    }
+}

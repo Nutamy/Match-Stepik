@@ -83,6 +83,51 @@ namespace Animations
                 .SetEase(Ease.OutBack, 1.1f).SetLink(tile.gameObject);
         }
 
+        public async UniTask ShakeTile(Tile tile, Vector3 localPosition, Vector3 strength, float duration)
+        {
+            var t = tile.transform;
+            // Доводим до конца перемещение и масштаб выбора, чтобы тряска шла от точной клетки
+            t.DOKill(true);
+            t.localPosition = localPosition;
+            await t.DOShakePosition(duration, strength, 16, 0f, false, true)
+                .SetEase(Ease.OutQuad).SetLink(tile.gameObject).ToUniTask();
+            if (tile == null) return;
+            t.localPosition = localPosition;
+        }
+
+        public Tween HintPull(Tile tile, Vector3 home, Vector2Int direction, float distance, float pullDuration, float pause)
+        {
+            var t = tile.transform;
+            var baseScale = t.localScale;
+            t.localPosition = home;
+
+            var dir = new Vector3(direction.x, direction.y, 0f);
+            var pulled = home + dir * distance;
+            // Растяжение вдоль направления хода и лёгкое сужение поперёк — фишка «тянется» к соседу
+            var stretch = direction.x != 0
+                ? Vector3.Scale(baseScale, new Vector3(1.14f, 0.9f, 1f))
+                : Vector3.Scale(baseScale, new Vector3(0.9f, 1.14f, 1f));
+
+            float half = pullDuration / 2f;
+            var sequence = DOTween.Sequence().SetLink(tile.gameObject);
+            for (int i = 0; i < 2; i++)
+            {
+                sequence.Append(t.DOLocalMove(pulled, half).SetEase(Ease.OutQuad))
+                    .Join(t.DOScale(stretch, half).SetEase(Ease.OutQuad))
+                    .Append(t.DOLocalMove(home, half).SetEase(Ease.InOutQuad))
+                    .Join(t.DOScale(baseScale, half).SetEase(Ease.InOutQuad));
+            }
+
+            return sequence.AppendInterval(pause)
+                .SetLoops(-1)
+                .OnKill(() =>
+                {
+                    if (tile == null) return;
+                    t.localPosition = home;
+                    t.localScale = baseScale;
+                });
+        }
+
         public void Dispose()
         {
             _cts?.Dispose();

@@ -19,6 +19,15 @@ namespace UI
             _gameResourcesLoader = gameResourcesLoader;
         }
 
+        /// <summary>Вспышка в цвет фишки; scale больше 1 — крупный взрыв.</summary>
+        public GameObject PlayFX(Vector3 position, Transform transform, Color color, float scale = TileFXStyle.TileScale)
+        {
+            var fx = GetFXFromPool(position, transform);
+            if (!fx.TryGetComponent(out TileFX tileFX)) tileFX = fx.AddComponent<TileFX>();
+            tileFX.Play(color, scale);
+            return fx;
+        }
+
         public GameObject GetFXFromPool(Vector3 position, Transform transform)
         {
             for (int i = 0; i < _FXPool.Count; i++)
