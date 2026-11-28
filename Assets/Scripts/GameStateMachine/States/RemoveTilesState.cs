@@ -95,7 +95,7 @@ namespace GameStateMachine.States
 
         private const float RocketPunch = 0.35f;
 
-        // 4 в ряд: одна фишка группы остаётся на месте и становится ракетой
+        // 4 в ряд и пересечение: одна фишка группы остаётся на месте и становится ракетой или бомбой
         private void CreateRockets()
         {
             foreach (var (tile, special) in _matchFinder.RocketsToCreate)
@@ -106,7 +106,7 @@ namespace GameStateMachine.States
             }
         }
 
-        // Ракеты вылетают; фишки на их пути исчезают, когда до них долетает ракета.
+        // Ракеты вылетают, бомбы взрываются; фишки исчезают, когда до них долетает ракета или когда взрывается бомба.
         // Возвращает задержку исчезновения для каждой задетой фишки.
         private Dictionary<Tile, float> LaunchRockets()
         {
@@ -122,18 +122,30 @@ namespace GameStateMachine.States
                 var color = Color.white;
                 var originTile = _grid.GetValue(blast.Origin.x, blast.Origin.y);
                 if (originTile != null) color = TileColor(originTile);
-                LaunchAfter(start, blast.Origin, blast.Special, color).Forget();
+                bool isBomb = SpecialTiles.IsBomb(blast.Special);
+                if (isBomb) ExplodeAfter(start + TileFXStyle.BombFuse, blast.Origin).Forget();
+                else LaunchAfter(start, blast.Origin, blast.Special, color).Forget();
 
                 foreach (var tile in blast.Cleared)
                 {
                     var cell = _grid.WorldToGrid(tile.transform.localPosition);
                     int distance = Mathf.Abs(cell.x - blast.Origin.x) + Mathf.Abs(cell.y - blast.Origin.y);
-                    float delay = start + RocketFlightFX.DelayFor(distance);
+                    // Бомба убирает весь квадрат разом, ракета — по мере полёта
+                    float delay = start + (isBomb ? TileFXStyle.BombFuse : RocketFlightFX.DelayFor(distance));
                     if (!delays.TryGetValue(tile, out var existing) || delay < existing) delays[tile] = delay;
-                    if (SpecialTiles.IsRocket(tile.Special) && !originDelay.ContainsKey(cell)) originDelay[cell] = delay;
+                    if (SpecialTiles.IsSpecial(tile.Special) && !originDelay.ContainsKey(cell)) originDelay[cell] = delay;
                 }
             }
             return delays;
+        }
+
+        private async UniTaskVoid ExplodeAfter(float delay, Vector2Int origin)
+        {
+            bool cancelled = await UniTask.Delay(TimeSpan.FromSeconds(delay), cancellationToken: _gameBoard.destroyCancellationToken)
+                .SuppressCancellationThrow();
+            if (cancelled) return;
+            _fxPool.PlayFX(CellWorld(origin), _gameBoard.transform, BombColor, TileFXStyle.BombScale);
+            _audioManager.PlayGroup(GroupSound.Cross, CascadeSound.PitchForStep(_turnCombo.Step), 0f);
         }
 
         private async UniTaskVoid LaunchAfter(float delay, Vector2Int origin, TileSpecial special, Color color)
@@ -174,9 +186,12 @@ namespace GameStateMachine.States
 
         // У ракеты своего цвета нет — шлейф и вспышка золотые, как сама ракета
         private static readonly Color RocketColor = new Color(1f, 0.78f, 0.3f);
+        // Взрыв бомбы — огненно-оранжевый, как искра на фитиле
+        private static readonly Color BombColor = new Color(1f, 0.55f, 0.2f);
 
         private static Color TileColor(Tile tile)
         {
+            if (tile.Special == TileSpecial.Bomb) return BombColor;
             if (tile.Special != TileSpecial.None) return RocketColor;
             return tile.TileConfig != null ? tile.TileConfig.FxColor : Color.white;
         }

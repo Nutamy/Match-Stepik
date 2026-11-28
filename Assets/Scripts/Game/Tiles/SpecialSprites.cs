@@ -4,7 +4,7 @@ namespace Game.Tiles
 {
     /// <summary>
     /// Картинки особых фишек. Если в Resources/Specials лежит готовая графика, берётся она,
-    /// иначе рисуется временная заглушка: белая стрелка с тёмным контуром.
+    /// иначе рисуется временная заглушка с тёмным контуром: стрелка для ракеты, круг для бомбы.
     /// </summary>
     public static class SpecialSprites
     {
@@ -13,11 +13,18 @@ namespace Game.Tiles
         // Assets/Resources/Specials/RocketFlight.png — летящая ракета, носом вправо
         private const string RocketFlightPath = "Specials/RocketFlight";
 
+        // Assets/Resources/Specials/Bomb.png — бомба на поле вместо фишки
+        private const string BombPath = "Specials/Bomb";
+
+        private static Sprite _bomb;
         private static Sprite _rocket;
         private static Sprite _rocketFlight;
 
         // Без своей картинки фишка-ракета берёт картинку летящей ракеты
         public static Sprite Rocket => _rocket != null ? _rocket : (_rocket = Resources.Load<Sprite>(RocketPath) ?? RocketFlight);
+
+        // Без своей картинки бомба — круглая заглушка
+        public static Sprite Bomb => _bomb != null ? _bomb : (_bomb = Resources.Load<Sprite>(BombPath) ?? CreateBall());
 
         public static Sprite RocketFlight => _rocketFlight != null
             ? _rocketFlight
@@ -26,6 +33,8 @@ namespace Game.Tiles
         private const int Size = 128;
 
         private static Sprite CreateArrow() => Draw("RocketFlightPlaceholder", (x, y) => Arrow(x, y));
+
+        private static Sprite CreateBall() => Draw("BombPlaceholder", (x, y) => Mathf.Sqrt(x * x + y * y) - 0.8f);
 
         // Расстояние со знаком до фигуры примерно: меньше нуля — внутри
         private static Sprite Draw(string name, System.Func<float, float, float> shape)

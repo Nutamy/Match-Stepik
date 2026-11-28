@@ -43,10 +43,10 @@ namespace GameStateMachine.States
             _turnCombo.Reset();
             // play sound
             _audioManager.PlayWhoosh();
-            // Двойное касание ракеты: клетка хода одна, менять нечего — ракета просто срабатывает
+            // Двойное касание ракеты или бомбы: клетка хода одна, менять нечего — она просто срабатывает
             bool isActivation = _grid.CurrentPosition == _grid.TargetPosition;
             if (!isActivation) await SwapTiles(_grid.CurrentPosition, _grid.TargetPosition);
-            // Ракета, которую сдвинул игрок, срабатывает и без совпадения
+            // Ракета или бомба, которую сдвинул игрок, срабатывает и без совпадения
             var moved = new[] { _grid.CurrentPosition, _grid.TargetPosition };
             if (_matchFinder.CheckBoardForMatches(_grid, moved) == false)
             {

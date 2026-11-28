@@ -10,7 +10,7 @@ namespace Tests.Editor
     {
         // Строки сверху вниз. '.' — пустая клетка; '#' — неподвижная клетка уровня;
         // строчная буква — обычная фишка; H — горизонтальная ракета (убирает строку),
-        // V — вертикальная (убирает столбец). У ракеты нет цвета: её ключ уникален, в линии она не собирается.
+        // V — вертикальная (убирает столбец), B — бомба (убирает 3×3). У особых фишек нет цвета: ключ уникален, в линии они не собираются.
         private class Board
         {
             private readonly string[] _rows;
@@ -25,7 +25,7 @@ namespace Tests.Editor
             {
                 char c = At(x, y);
                 if (c == '.' || c == '#') return null;
-                if (c == 'H' || c == 'V') return new Vector2Int(x, y);
+                if (c == 'H' || c == 'V' || c == 'B') return new Vector2Int(x, y);
                 return c;
             }
 
@@ -35,6 +35,7 @@ namespace Tests.Editor
                 {
                     case 'H': return TileSpecial.RocketHorizontal;
                     case 'V': return TileSpecial.RocketVertical;
+                    case 'B': return TileSpecial.Bomb;
                     default: return TileSpecial.None;
                 }
             }
@@ -181,6 +182,96 @@ namespace Tests.Editor
         {
             var cells = SpecialTiles.Line(C(1, 0), TileSpecial.RocketHorizontal, 5, 1).ToList();
             CollectionAssert.AreEqual(new[] { C(0, 0), C(2, 0), C(3, 0), C(4, 0) }, cells);
+        }
+
+        [Test]
+        public void Crossing_GivesBomb()
+        {
+            Assert.AreEqual(TileSpecial.Bomb, SpecialTiles.SpecialFor(MatchDirection.Multiply));
+            Assert.AreEqual(TileSpecial.RocketVertical, SpecialTiles.SpecialFor(MatchDirection.LongHorizontal));
+            Assert.AreEqual(TileSpecial.None, SpecialTiles.SpecialFor(MatchDirection.Horizontal));
+        }
+
+        [Test]
+        public void LShape_LeavesBombInCorner()
+        {
+            var r = new Board(
+                "abc",
+                "acb",
+                "aaa").Resolve();
+
+            Assert.AreEqual(1, r.Spawns.Count);
+            Assert.AreEqual(TileSpecial.Bomb, r.Spawns[0].Special);
+            Assert.AreEqual(C(0, 0), r.Spawns[0].Cell);
+            Assert.AreEqual(4, r.Remove.Count);
+            Assert.That(r.Remove, Has.No.Member(C(0, 0)));
+        }
+
+        [Test]
+        public void TShape_LeavesBombAtJunction()
+        {
+            var r = new Board(
+                "aaa",
+                "bac",
+                "cab").Resolve();
+
+            Assert.AreEqual(TileSpecial.Bomb, r.Spawns[0].Special);
+            Assert.AreEqual(C(1, 2), r.Spawns[0].Cell);
+            Assert.AreEqual(4, r.Remove.Count);
+        }
+
+        [Test]
+        public void Bomb_ClearsSquareAroundItself()
+        {
+            var r = new Board(
+                "bcdbc",
+                "cdbcd",
+                "dbBdb",
+                "bcdbc",
+                "cdbcd").Resolve(forced: new[] { C(2, 2) });
+
+            Assert.AreEqual(9, r.Remove.Count);
+            for (int x = 1; x <= 3; x++)
+            for (int y = 1; y <= 3; y++)
+                Assert.That(r.Remove, Has.Member(C(x, y)));
+            Assert.AreEqual(1, r.Blasts.Count);
+            Assert.AreEqual(8, r.Blasts[0].Cleared.Count);
+        }
+
+        [Test]
+        public void BombInCorner_ClearsOnlyCellsOnBoard()
+        {
+            var r = new Board(
+                "bcd",
+                "cdb",
+                "Bbc").Resolve(forced: new[] { C(0, 0) });
+
+            CollectionAssert.AreEquivalent(new[] { C(0, 0), C(1, 0), C(0, 1), C(1, 1) }, r.Remove);
+        }
+
+        [Test]
+        public void RocketHitsBomb_BombExplodesToo()
+        {
+            // Ракета во второй строке снизу задевает бомбу, бомба убирает квадрат вокруг себя
+            var r = new Board(
+                "bcdbc",
+                "cdbcd",
+                "HcdBc",
+                "bcdbd").Resolve(forced: new[] { C(0, 1) });
+
+            Assert.AreEqual(2, r.Blasts.Count);
+            Assert.That(r.Remove, Has.Member(C(4, 2)));
+            Assert.That(r.Remove, Has.Member(C(2, 0)));
+            Assert.That(r.Remove, Has.No.Member(C(1, 2)));
+        }
+
+        [Test]
+        public void Square_GoesFromSidesToCorners()
+        {
+            var cells = SpecialTiles.Square(C(1, 1), 1, 3, 3).ToList();
+            Assert.AreEqual(8, cells.Count);
+            foreach (var c in cells.Take(4))
+                Assert.AreEqual(1, Mathf.Abs(c.x - 1) + Mathf.Abs(c.y - 1));
         }
     }
 }

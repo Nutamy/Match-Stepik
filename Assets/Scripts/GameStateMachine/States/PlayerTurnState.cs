@@ -32,7 +32,7 @@ namespace GameStateMachine.States
         private const float HintPullDuration = 0.36f;   // туда и обратно
         private const float HintPause = 1.1f;
 
-        // Двойное касание ракеты запускает её без хода-обмена
+        // Двойное касание ракеты или бомбы запускает её без хода-обмена
         private const float DoubleTapTime = 0.35f;
         private Vector2Int _lastTapCell = Vector2Int.one * -1;
         private float _lastTapTime = -1f;
@@ -71,7 +71,7 @@ namespace GameStateMachine.States
             var cell = _grid.WorldToGrid(world);
             if (!IsPlayable(cell)) return;
 
-            if (IsDoubleTap(cell) && IsRocket(cell))
+            if (IsDoubleTap(cell) && IsSpecial(cell))
             {
                 Activate(cell);
                 return;
@@ -158,8 +158,8 @@ namespace GameStateMachine.States
             return isDouble;
         }
 
-        private bool IsRocket(Vector2Int cell) =>
-            Game.MatchTiles.SpecialTiles.IsRocket(_grid.GetValue(cell.x, cell.y).Special);
+        private bool IsSpecial(Vector2Int cell) =>
+            Game.MatchTiles.SpecialTiles.IsSpecial(_grid.GetValue(cell.x, cell.y).Special);
 
         private void Activate(Vector2Int cell)
         {

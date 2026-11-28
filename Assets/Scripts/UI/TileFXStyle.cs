@@ -16,6 +16,10 @@ namespace UI
         public const float FourScale = 1.7f;
         public const float CrossScale = 2.1f;
         public const float FiveScale = 2.5f;
+        // Взрыв бомбы накрывает её квадрат 3×3
+        public const float BombScale = 3.2f;
+        // Бомба взрывается через столько секунд после того, как её задело или ею сходили
+        public const float BombFuse = 0.12f;
 
         /// <summary>Нужен ли группе большой взрыв.</summary>
         public static bool IsBig(MatchDirection direction) => BigScale(direction) > TileScale;

@@ -23,7 +23,7 @@ namespace Game.Tiles
 
         public bool SetMatched(bool value) => IsMatched = value;
 
-        /// <summary>Делает фишку особой (ракетой) или обычной; значок рисуется поверх фишки.</summary>
+        /// <summary>Делает фишку особой (ракетой или бомбой) или обычной; особая рисуется вместо фишки.</summary>
         public void SetSpecial(TileSpecial special)
         {
             Special = special;
@@ -35,10 +35,10 @@ namespace Game.Tiles
                 return;
             }
 
-            // Ракета рисуется вместо фишки: одна ракета носом туда, куда полетит
+            // Ракета рисуется вместо фишки: одна ракета носом туда, куда полетит; бомба — как есть
             var overlay = GetSpecialRenderer();
-            overlay.sprite = SpecialSprites.Rocket;
-            // Картинка смотрит вправо; вертикальная ракета — та же картинка носом вверх
+            overlay.sprite = special == TileSpecial.Bomb ? SpecialSprites.Bomb : SpecialSprites.Rocket;
+            // Картинка ракеты смотрит вправо; вертикальная ракета — та же картинка носом вверх
             overlay.transform.localRotation = Quaternion.Euler(0f, 0f, special == TileSpecial.RocketVertical ? 90f : 0f);
             FitOverlay(overlay);
             overlay.gameObject.SetActive(true);
@@ -59,7 +59,7 @@ namespace Game.Tiles
             return _specialRenderer;
         }
 
-        // Ракета по длине занимает OverlayFill от размера фишки независимо от разрешения картинки
+        // Особая фишка по большей стороне занимает OverlayFill от размера фишки независимо от разрешения картинки
         private const float OverlayFill = 0.95f;
 
         private void FitOverlay(SpriteRenderer overlay)

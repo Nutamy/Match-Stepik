@@ -76,7 +76,7 @@ namespace Game.Board
         public bool HasPossibleMove() => TryFindMove(out _, out _);
 
         // Ход для подсказки: пара соседних клеток, обмен которых даёт линию;
-        // если линий нет, но есть ракета, — сдвиг ракеты (он срабатывает всегда)
+        // если линий нет, но есть ракета или бомба, — сдвиг её (он срабатывает всегда)
         public bool TryFindMove(out Vector2Int from, out Vector2Int to) =>
             MoveFinder.TryFindMove(_grid.Width, _grid.Height, GetKey, out from, out to)
             || TryFindRocketMove(out from, out to);
@@ -88,7 +88,7 @@ namespace Game.Board
             for (int y = 0; y < _grid.Height; y++)
             {
                 var tile = _grid.GetValue(x, y);
-                if (GetKey(x, y) == null || !SpecialTiles.IsRocket(tile.Special)) continue;
+                if (GetKey(x, y) == null || !SpecialTiles.IsSpecial(tile.Special)) continue;
                 foreach (var n in neighbours)
                 {
                     if (GetKey(x + n.x, y + n.y) == null) continue;

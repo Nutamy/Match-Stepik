@@ -10,9 +10,9 @@ namespace Game.MatchTiles
         public List<Tile> TilesToRemove { get; } = new List<Tile>();
         // Все совпадения за один ход: каждая группа начисляет очки отдельно
         public List<MatchResult> AllMatchResults { get; private set; } = new List<MatchResult>();
-        // Фишки, которые остаются на поле и становятся ракетами (4 в ряд)
+        // Фишки, которые остаются на поле и становятся ракетами (4 в ряд) или бомбами (пересечение)
         public List<(Tile Tile, TileSpecial Special)> RocketsToCreate { get; } = new List<(Tile, TileSpecial)>();
-        // Сработавшие ракеты: откуда летят и какие фишки убрали сверх совпадений
+        // Сработавшие ракеты и бомбы: откуда и какие фишки убрали сверх совпадений
         public List<(Vector2Int Origin, TileSpecial Special, List<Tile> Cleared)> RocketBlasts { get; } =
             new List<(Vector2Int, TileSpecial, List<Tile>)>();
 
@@ -76,7 +76,7 @@ namespace Game.MatchTiles
         public static object GetMatchKey(Tile tile)
         {
             if (tile == null || !tile.IsInteractable) return null;
-            // У ракеты нет цвета: она ни с чем не собирается в линию, но её можно двигать и убирать
+            // У ракеты и бомбы нет цвета: они ни с чем не собираются в линию, но их можно двигать и убирать
             if (tile.Special != TileSpecial.None) return tile;
             return tile.TileConfig;
         }
