@@ -22,10 +22,10 @@ namespace UI
         public const float BombFuse = 0.12f;
         // Вспышка цветной бомбы в её клетке
         public const float ColorBombScale = 2.8f;
-        // Фишки цвета цветной бомбы исчезают волной: на столько секунд позже за каждую клетку расстояния
-        public const float ColorWaveStep = 0.035f;
-        // Комбо цветной бомбы: фишка показывается ракетой или бомбой столько секунд, потом срабатывает
-        public const float ComboHold = 0.4f;
+        // Комбо цветной бомбы: после последней превращённой фишки пауза, чтобы игрок увидел поле из ракет или бомб...
+        public const float ComboAutoFireDelay = 0.5f;
+        // ...затем они срабатывают по очереди с таким шагом
+        public const float ComboFireStagger = 0.12f;
 
         /// <summary>Нужен ли группе большой взрыв.</summary>
         public static bool IsBig(MatchDirection direction) => BigScale(direction) > TileScale;

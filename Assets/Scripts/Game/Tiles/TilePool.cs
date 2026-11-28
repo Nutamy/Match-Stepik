@@ -43,6 +43,7 @@ namespace Game.Tiles
                 _tilePool[i].SetTileConfig(GetRandomTileConfig());
                 _tilePool[i].SetSpecial(Game.MatchTiles.TileSpecial.None);
                 _tilePool[i].gameObject.transform.position = position;
+                _tilePool[i].gameObject.transform.localRotation = Quaternion.identity;
                 return _tilePool[i];
             }
 

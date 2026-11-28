@@ -72,6 +72,8 @@ namespace Animations
             if (target == null) return;
             target.SetActive(false);
             t.localScale = Vector3.one;
+            // Цветная бомба крутится перед срабатыванием: в пул фишка возвращается ровно
+            t.localRotation = Quaternion.identity;
         }
 
         public void DropTile(Tile tile, Vector3 localPosition, float duration, float delay)

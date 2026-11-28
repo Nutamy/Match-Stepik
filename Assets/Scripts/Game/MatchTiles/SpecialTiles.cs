@@ -54,6 +54,8 @@ namespace Game.MatchTiles
         public List<RocketBlast> Blasts { get; } = new List<RocketBlast>();
         // Комбо цветной бомбы с ракетой или бомбой: фишки её цвета, которые сами становятся ракетами или бомбами и срабатывают
         public List<RocketSpawn> Converted { get; } = new List<RocketSpawn>();
+        // Ракета или бомба, с которой поменяли цветную бомбу; срабатывает вместе с превращёнными фишками
+        public Vector2Int? ComboPartner { get; set; }
     }
 
     /// <summary>
@@ -173,6 +175,8 @@ namespace Game.MatchTiles
                 }
                 result.Remove.Add(colorBomb);
                 queue.Enqueue(colorBomb);
+                foreach (var m in forced)
+                    if (m != colorBomb) result.ComboPartner = m;
             }
 
             TileSpecial SpecialAt(Vector2Int c) =>

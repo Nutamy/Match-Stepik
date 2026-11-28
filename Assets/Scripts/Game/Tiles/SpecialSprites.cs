@@ -39,6 +39,37 @@ namespace Game.Tiles
             ? _rocketFlight
             : (_rocketFlight = Resources.Load<Sprite>(RocketFlightPath) ?? CreateArrow());
 
+        private static Sprite _spark;
+
+        // Искра цветной бомбы: белая светящаяся точка с мягким краем, красится в цвет фишки
+        public static Sprite Spark => _spark != null ? _spark : (_spark = CreateSpark());
+
+        private static Sprite CreateSpark()
+        {
+            const int size = 64;
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                name = "ColorBombSpark",
+                wrapMode = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Bilinear
+            };
+            var pixels = new Color[size * size];
+            for (int py = 0; py < size; py++)
+            for (int px = 0; px < size; px++)
+            {
+                float x = (px + 0.5f) / size * 2f - 1f;
+                float y = (py + 0.5f) / size * 2f - 1f;
+                float r = Mathf.Sqrt(x * x + y * y);
+                // Яркое ядро и мягкое свечение до края
+                float core = Mathf.Clamp01((0.35f - r) / 0.1f);
+                float glow = Mathf.Pow(Mathf.Clamp01(1f - r), 2f);
+                pixels[py * size + px] = new Color(1f, 1f, 1f, Mathf.Clamp01(core + glow * 0.8f));
+            }
+            texture.SetPixels(pixels);
+            texture.Apply();
+            return Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
+        }
+
         private const int Size = 128;
 
         private static Sprite CreateArrow() => Draw("RocketFlightPlaceholder", (x, y) => Arrow(x, y));

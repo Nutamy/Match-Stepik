@@ -14,6 +14,7 @@ namespace Game.MatchTiles
         public List<(Tile Tile, TileSpecial Special)> RocketsToCreate { get; } = new List<(Tile, TileSpecial)>();
         // Комбо цветной бомбы: обычные фишки, которые на время становятся ракетами или бомбами и срабатывают
         public List<(Tile Tile, TileSpecial Special)> Converted { get; } = new List<(Tile, TileSpecial)>();
+        public Vector2Int? ComboPartner { get; private set; }
         // Сработавшие ракеты и бомбы: откуда и какие фишки убрали сверх совпадений
         public List<(Vector2Int Origin, TileSpecial Special, List<Tile> Cleared)> RocketBlasts { get; } =
             new List<(Vector2Int, TileSpecial, List<Tile>)>();
@@ -54,6 +55,7 @@ namespace Game.MatchTiles
                 RocketsToCreate.Add((grid.GetValue(spawn.Cell.x, spawn.Cell.y), spawn.Special));
             }
 
+            ComboPartner = resolution.ComboPartner;
             foreach (var convert in resolution.Converted)
             {
                 Converted.Add((grid.GetValue(convert.Cell.x, convert.Cell.y), convert.Special));
@@ -105,6 +107,7 @@ namespace Game.MatchTiles
             RocketsToCreate.Clear();
             RocketBlasts.Clear();
             Converted.Clear();
+            ComboPartner = null;
         }
     }
 }

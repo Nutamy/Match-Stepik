@@ -106,53 +106,120 @@ namespace GameStateMachine.States
             }
         }
 
-        // Ракеты вылетают, бомбы взрываются; фишки исчезают, когда до них долетает ракета или когда взрывается бомба.
+        // Ракеты вылетают, бомбы взрываются, цветная бомба крутится и рассылает искры к своим фишкам.
+        // Фишки исчезают, когда до них долетает ракета или искра, или когда взрывается бомба.
         // Возвращает задержку исчезновения для каждой задетой фишки.
         private Dictionary<Tile, float> LaunchRockets()
         {
             var delays = new Dictionary<Tile, float>();
             if (_matchFinder.RocketBlasts.Count == 0) return delays;
 
-            _audioManager.PlayWhoosh();
             var originDelay = new Dictionary<Vector2Int, float>();
             // Клетки, откуда стартует какой-нибудь взрыв: задетая там фишка сработает, когда до неё дойдёт волна
             var origins = new HashSet<Vector2Int>();
             foreach (var blast in _matchFinder.RocketBlasts) origins.Add(blast.Origin);
-            // Комбо цветной бомбы: фишки её цвета сначала становятся ракетами или бомбами, потом срабатывают
+            // Комбо цветной бомбы: фишки её цвета сначала становятся ракетами или бомбами, потом срабатывают по очереди
             var converted = new Dictionary<Tile, TileSpecial>();
             foreach (var (tile, special) in _matchFinder.Converted) converted[tile] = special;
-            int convertedSounds = 0;
+
             foreach (var blast in _matchFinder.RocketBlasts)
             {
                 // Ракета, задетая другой ракетой, стартует, когда до неё долетели
                 originDelay.TryGetValue(blast.Origin, out float start);
-                var color = Color.white;
                 var originTile = _grid.GetValue(blast.Origin.x, blast.Origin.y);
-                if (originTile != null) color = TileColor(originTile);
+                // Сама фишка исчезает, когда срабатывает (у ракеты-напарника в комбо — позже)
+                if (originTile != null && !delays.ContainsKey(originTile)) delays[originTile] = start;
+
+                if (SpecialTiles.IsColorBomb(blast.Special))
+                {
+                    ScheduleColorBomb(blast.Origin, originTile, blast.Cleared, start, converted, delays, originDelay);
+                    continue;
+                }
+
                 bool isBomb = SpecialTiles.IsBomb(blast.Special);
-                bool isColorBomb = SpecialTiles.IsColorBomb(blast.Special);
-                if (isBomb) ExplodeAfter(start + TileFXStyle.BombFuse, blast.Origin, BombColor, TileFXStyle.BombScale, GroupSound.Cross).Forget();
-                else if (isColorBomb) ExplodeAfter(start + TileFXStyle.BombFuse, blast.Origin, ColorBombColor, TileFXStyle.ColorBombScale, GroupSound.Five).Forget();
-                else LaunchAfter(start, blast.Origin, blast.Special, color).Forget();
+                var blastOrigin = blast.Origin;
+                if (isBomb)
+                {
+                    After(start + TileFXStyle.BombFuse, () =>
+                    {
+                        _fxPool.PlayFX(CellWorld(blastOrigin), _gameBoard.transform, BombColor, TileFXStyle.BombScale);
+                        _audioManager.PlayBomb();
+                    }).Forget();
+                }
+                else
+                {
+                    var color = originTile != null ? TileColor(originTile) : Color.white;
+                    LaunchAfter(start, blast.Origin, blast.Special, color).Forget();
+                }
 
                 foreach (var tile in blast.Cleared)
                 {
                     var cell = _grid.WorldToGrid(tile.transform.localPosition);
                     int distance = Mathf.Abs(cell.x - blast.Origin.x) + Mathf.Abs(cell.y - blast.Origin.y);
-                    // Бомба убирает весь квадрат разом, цветная бомба — волной от себя, ракета — по мере полёта
-                    float delay = start + (isBomb ? TileFXStyle.BombFuse
-                        : isColorBomb ? TileFXStyle.BombFuse + TileFXStyle.ColorWaveStep * distance
-                        : RocketFlightFX.DelayFor(distance));
-                    if (converted.TryGetValue(tile, out var into))
-                    {
-                        ConvertAfter(tile, into, delay, convertedSounds++ < MaxConvertSounds).Forget();
-                        delay += TileFXStyle.ComboHold;
-                    }
+                    // Бомба убирает весь квадрат разом, ракета — по мере полёта
+                    float delay = start + (isBomb ? TileFXStyle.BombFuse : RocketFlightFX.DelayFor(distance));
                     if (!delays.TryGetValue(tile, out var existing) || delay < existing) delays[tile] = delay;
                     if (origins.Contains(cell) && !originDelay.ContainsKey(cell)) originDelay[cell] = delay;
                 }
             }
             return delays;
+        }
+
+        // Цветная бомба: крутится, потом по одной искре к каждой своей фишке, от ближних к дальним.
+        // Долетела искра — фишка исчезает или (комбо) становится ракетой или бомбой.
+        // Когда долетела последняя, бомба исчезает, а после паузы превращённые фишки срабатывают по очереди.
+        private void ScheduleColorBomb(Vector2Int origin, Tile bombTile, List<Tile> cleared, float start,
+            Dictionary<Tile, TileSpecial> converted, Dictionary<Tile, float> delays, Dictionary<Vector2Int, float> originDelay)
+        {
+            int count = cleared.Count;
+            float lastArrival = start + (count > 0 ? ColorBombFX.ArrivalFor(count - 1, count) : ColorBombFX.SparkLead);
+            float stagger = ColorBombFX.StaggerFor(count);
+            var from = _grid.GridToWorld(origin.x, origin.y);
+
+            if (bombTile != null)
+            {
+                delays[bombTile] = lastArrival;
+                After(start, () =>
+                {
+                    ColorBombFX.Spin(bombTile, lastArrival - start);
+                    _audioManager.PlayRainbow();
+                }).Forget();
+            }
+            After(start + ColorBombFX.SparkLead, () =>
+                _fxPool.PlayFX(CellWorld(origin), _gameBoard.transform, ColorBombColor, TileFXStyle.ColorBombScale)).Forget();
+
+            // Первой срабатывает ракета или бомба, с которой поменяли цветную, за ней превращённые фишки
+            float fire = lastArrival + TileFXStyle.ComboAutoFireDelay;
+            var partner = _matchFinder.ComboPartner;
+            if (partner.HasValue && converted.Count > 0)
+            {
+                originDelay[partner.Value] = fire;
+                var partnerTile = _grid.GetValue(partner.Value.x, partner.Value.y);
+                if (partnerTile != null) delays[partnerTile] = fire;
+                fire += TileFXStyle.ComboFireStagger;
+            }
+
+            int convertSounds = 0;
+            for (int i = 0; i < count; i++)
+            {
+                var tile = cleared[i];
+                var cell = _grid.WorldToGrid(tile.transform.localPosition);
+                float arrival = start + ColorBombFX.ArrivalFor(i, count);
+                ColorBombFX.Spark(_gameBoard.transform, from, _grid.GridToWorld(cell.x, cell.y), TileColor(tile),
+                    start + ColorBombFX.SparkLead + i * stagger);
+
+                if (converted.TryGetValue(tile, out var into))
+                {
+                    ConvertAfter(tile, into, arrival, convertSounds++ < MaxConvertSounds).Forget();
+                    delays[tile] = fire;
+                    originDelay[cell] = fire;
+                    fire += TileFXStyle.ComboFireStagger;
+                }
+                else if (!delays.TryGetValue(tile, out var existing) || arrival < existing)
+                {
+                    delays[tile] = arrival;
+                }
+            }
         }
 
         // Сколько превращений в комбо озвучивать: дальше звуки сливаются в шум
@@ -166,16 +233,18 @@ namespace GameStateMachine.States
             _fxPool.PlayFX(tile.transform.position, _gameBoard.transform, TileColor(tile));
             tile.SetSpecial(special);
             _animation.DoPunchAnimate(tile.gameObject, Vector3.one * RocketPunch, 0.25f);
-            if (withSound) _audioManager.PlayWhoosh();
+            if (withSound) _audioManager.PlayPop();
         }
 
-        private async UniTaskVoid ExplodeAfter(float delay, Vector2Int origin, Color color, float scale, GroupSound sound)
+        private async UniTaskVoid After(float delay, Action action)
         {
-            bool cancelled = await UniTask.Delay(TimeSpan.FromSeconds(delay), cancellationToken: _gameBoard.destroyCancellationToken)
-                .SuppressCancellationThrow();
-            if (cancelled) return;
-            _fxPool.PlayFX(CellWorld(origin), _gameBoard.transform, color, scale);
-            _audioManager.PlayGroup(sound, CascadeSound.PitchForStep(_turnCombo.Step), 0f);
+            if (delay > 0f)
+            {
+                bool cancelled = await UniTask.Delay(TimeSpan.FromSeconds(delay), cancellationToken: _gameBoard.destroyCancellationToken)
+                    .SuppressCancellationThrow();
+                if (cancelled) return;
+            }
+            action();
         }
 
         private async UniTaskVoid LaunchAfter(float delay, Vector2Int origin, TileSpecial special, Color color)
@@ -187,6 +256,7 @@ namespace GameStateMachine.States
                 if (cancelled) return;
             }
             RocketFlightFX.Play(_gameBoard.transform, origin, special, _grid.Width, _grid.Height, color);
+            _audioManager.PlayRocket();
         }
 
         private async UniTask PopOutAfter(Tile tile, float delay)

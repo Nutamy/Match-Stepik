@@ -32,6 +32,11 @@ namespace Audio
         [SerializeField] private AudioClip _matchFive;
         [SerializeField] private AudioClip _matchCross;
 
+        [Header("Special tiles (пусто — берутся из Resources/Sounds)")]
+        [SerializeField] private AudioClip _rocket;
+        [SerializeField] private AudioClip _bomb;
+        [SerializeField] private AudioClip _rainbow;
+
         // Свой источник на каждую группу шага: у PlayOneShot один pitch на источник
         private readonly List<AudioSource> _groupSources = new List<AudioSource>();
         private int _nextGroupSource;
@@ -50,6 +55,25 @@ namespace Audio
         public void PlayWin() => PlayNormalPitch(_win);
         public void PlayLose() => PlayNormalPitch(_lose);
         public void PlayWhoosh() => PlayRandomPitch(_whoosh);
+
+        // Запуск ракеты, взрыв бомбы и срабатывание цветной бомбы.
+        // В комбо их много подряд: один и тот же звук не чаще раза в SpecialSoundGap секунд, иначе каша
+        public void PlayRocket() => PlaySpecial(ref _rocket, "Sounds/Rocket", ref _lastRocket);
+        public void PlayBomb() => PlaySpecial(ref _bomb, "Sounds/Bomb", ref _lastBomb);
+        public void PlayRainbow() => PlaySpecial(ref _rainbow, "Sounds/Rainbow", ref _lastRainbow);
+
+        private const float SpecialSoundGap = 0.2f;
+        private float _lastRocket = -1f, _lastBomb = -1f, _lastRainbow = -1f;
+
+        private void PlaySpecial(ref AudioClip clip, string resourcePath, ref float lastTime)
+        {
+            if (clip == null) clip = Resources.Load<AudioClip>(resourcePath);
+            if (clip == null) { PlayWhoosh(); return; }
+            if (lastTime >= 0f && Time.unscaledTime - lastTime < SpecialSoundGap) return;
+            lastTime = Time.unscaledTime;
+            _pitchSoundSource.pitch = Random.Range(0.92f, 1.08f);
+            _pitchSoundSource.PlayOneShot(clip);
+        }
 
         /// <summary>
         /// Один звук на группу совпадения. Тон зависит от шага каскада, delay — сдвиг внутри шага.
