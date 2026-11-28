@@ -52,6 +52,8 @@ namespace Game.MatchTiles
         public HashSet<Vector2Int> Remove { get; } = new HashSet<Vector2Int>();
         public List<RocketSpawn> Spawns { get; } = new List<RocketSpawn>();
         public List<RocketBlast> Blasts { get; } = new List<RocketBlast>();
+        // Комбо цветной бомбы с ракетой или бомбой: фишки её цвета, которые сами становятся ракетами или бомбами и срабатывают
+        public List<RocketSpawn> Converted { get; } = new List<RocketSpawn>();
     }
 
     /// <summary>
@@ -157,8 +159,27 @@ namespace Game.MatchTiles
             // Цепочка: каждая убираемая особая фишка убирает свою область, задетые особые фишки тоже срабатывают
             var queue = new Queue<Vector2Int>();
             var fired = new HashSet<Vector2Int>();
+
+            // Комбо: игрок поменял цветную бомбу с ракетой или бомбой — каждая фишка самого частого цвета
+            // становится такой же особой фишкой и срабатывает. Цветная бомба идёт первой, чтобы забрать все свои фишки.
+            var converted = new Dictionary<Vector2Int, TileSpecial>();
+            if (TryFindCombo(forced, getSpecial, out var colorBomb, out var partner))
+            {
+                var color = PickColor(colorBomb, width, height, getColor);
+                foreach (var c in SameColor(colorBomb, color, width, height, getColor))
+                {
+                    if (spawnCells.Contains(c) || !isClearable(c.x, c.y)) continue;
+                    converted[c] = ConvertedSpecial(c, partner);
+                }
+                result.Remove.Add(colorBomb);
+                queue.Enqueue(colorBomb);
+            }
+
+            TileSpecial SpecialAt(Vector2Int c) =>
+                converted.TryGetValue(c, out var s) ? s : getSpecial(c.x, c.y);
+
             foreach (var c in result.Remove)
-                if (IsSpecial(getSpecial(c.x, c.y))) queue.Enqueue(c);
+                if (IsSpecial(SpecialAt(c))) queue.Enqueue(c);
             if (forced != null)
             {
                 foreach (var c in forced)
@@ -174,7 +195,7 @@ namespace Game.MatchTiles
                 var origin = queue.Dequeue();
                 if (!fired.Add(origin)) continue;
 
-                var special = getSpecial(origin.x, origin.y);
+                var special = SpecialAt(origin);
                 var cleared = new List<Vector2Int>();
                 var area = IsColorBomb(special)
                     ? SameColor(origin, PickColor(origin, width, height, getColor, forced), width, height, getColor)
@@ -185,12 +206,41 @@ namespace Game.MatchTiles
                     if (c == origin || spawnCells.Contains(c) || !isClearable(c.x, c.y)) continue;
                     if (!result.Remove.Add(c)) continue;
                     cleared.Add(c);
-                    if (IsSpecial(getSpecial(c.x, c.y))) queue.Enqueue(c);
+                    if (IsSpecial(SpecialAt(c))) queue.Enqueue(c);
+                    if (converted.TryGetValue(c, out var into)) result.Converted.Add(new RocketSpawn(c, into));
                 }
                 result.Blasts.Add(new RocketBlast(origin, special, cleared));
             }
 
             return result;
+        }
+
+        /// <summary>Игрок поменял цветную бомбу с ракетой или обычной бомбой: какая из клеток бомба и что за напарник.</summary>
+        public static bool TryFindCombo(IList<Vector2Int> moved, Func<int, int, TileSpecial> getSpecial,
+            out Vector2Int colorBomb, out TileSpecial partner)
+        {
+            colorBomb = default;
+            partner = TileSpecial.None;
+            if (moved == null || moved.Count != 2 || moved[0] == moved[1]) return false;
+
+            for (int i = 0; i < 2; i++)
+            {
+                var a = moved[i];
+                var b = moved[1 - i];
+                var other = getSpecial(b.x, b.y);
+                if (!IsColorBomb(getSpecial(a.x, a.y)) || !(IsRocket(other) || IsBomb(other))) continue;
+                colorBomb = a;
+                partner = other;
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>Во что превращается фишка цвета в комбо: в бомбу или в ракету, ракеты чередуются шахматкой.</summary>
+        public static TileSpecial ConvertedSpecial(Vector2Int cell, TileSpecial partner)
+        {
+            if (IsBomb(partner)) return TileSpecial.Bomb;
+            return (cell.x + cell.y) % 2 == 0 ? TileSpecial.RocketHorizontal : TileSpecial.RocketVertical;
         }
 
         /// <summary>

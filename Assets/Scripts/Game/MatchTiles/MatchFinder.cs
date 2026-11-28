@@ -12,6 +12,8 @@ namespace Game.MatchTiles
         public List<MatchResult> AllMatchResults { get; private set; } = new List<MatchResult>();
         // Фишки, которые остаются на поле и становятся ракетами (4 в ряд), бомбами (пересечение) или цветными бомбами (5 в ряд)
         public List<(Tile Tile, TileSpecial Special)> RocketsToCreate { get; } = new List<(Tile, TileSpecial)>();
+        // Комбо цветной бомбы: обычные фишки, которые на время становятся ракетами или бомбами и срабатывают
+        public List<(Tile Tile, TileSpecial Special)> Converted { get; } = new List<(Tile, TileSpecial)>();
         // Сработавшие ракеты и бомбы: откуда и какие фишки убрали сверх совпадений
         public List<(Vector2Int Origin, TileSpecial Special, List<Tile> Cleared)> RocketBlasts { get; } =
             new List<(Vector2Int, TileSpecial, List<Tile>)>();
@@ -50,6 +52,11 @@ namespace Game.MatchTiles
             foreach (var spawn in resolution.Spawns)
             {
                 RocketsToCreate.Add((grid.GetValue(spawn.Cell.x, spawn.Cell.y), spawn.Special));
+            }
+
+            foreach (var convert in resolution.Converted)
+            {
+                Converted.Add((grid.GetValue(convert.Cell.x, convert.Cell.y), convert.Special));
             }
 
             foreach (var blast in resolution.Blasts)
@@ -97,6 +104,7 @@ namespace Game.MatchTiles
             AllMatchResults.Clear();
             RocketsToCreate.Clear();
             RocketBlasts.Clear();
+            Converted.Clear();
         }
     }
 }

@@ -361,5 +361,66 @@ namespace Tests.Editor
             Assert.That(r.Remove, Has.No.Member(C(3, 0)));
             Assert.AreEqual(4, r.Remove.Count);
         }
+    
+        [Test]
+        public void ColorBombSwappedWithRocket_EveryTileOfColorBecomesRocketAndFires()
+        {
+            // b — самый частый цвет (5), a и c — по 4; готовых троек нет
+            var board = new Board(
+                "abcab",
+                "cCHbc",
+                "bacba");
+            var move = new[] { C(1, 1), C(2, 1) };
+            var r = board.Resolve(moved: move, forced: move);
+
+            var aCells = new[] { C(0, 0), C(3, 0), C(3, 1), C(1, 2), C(4, 2) };
+            CollectionAssert.AreEquivalent(aCells, r.Converted.Select(c => c.Cell));
+            Assert.That(r.Converted.All(c => SpecialTiles.IsRocket(c.Special)));
+            // Шахматка: в комбо есть и горизонтальные, и вертикальные ракеты
+            Assert.AreEqual(TileSpecial.RocketHorizontal, r.Converted.First(c => c.Cell == C(0, 0)).Special);
+            Assert.AreEqual(TileSpecial.RocketVertical, r.Converted.First(c => c.Cell == C(3, 0)).Special);
+
+            // Первой срабатывает цветная бомба, потом ракета-напарник и каждая новая ракета
+            Assert.AreEqual(TileSpecial.ColorBomb, r.Blasts[0].Special);
+            foreach (var cell in aCells) Assert.That(r.Blasts.Any(b => b.Origin == cell), cell.ToString());
+            Assert.That(r.Blasts.Any(b => b.Origin == C(2, 1)));
+            // Горизонтальные ракеты в каждой строке убирают всё поле
+            Assert.AreEqual(15, r.Remove.Count);
+        }
+
+        [Test]
+        public void ColorBombSwappedWithBomb_EveryTileOfColorBecomesBomb()
+        {
+            var board = new Board(
+                "abcabcab",
+                "cbBCcabc",
+                "bcabcabc");
+            var move = new[] { C(2, 1), C(3, 1) };
+            var r = board.Resolve(moved: move, forced: move);
+
+            Assert.IsNotEmpty(r.Converted);
+            Assert.That(r.Converted.All(c => c.Special == TileSpecial.Bomb));
+            Assert.That(r.Converted.All(c => r.Blasts.Any(b => b.Origin == c.Cell && b.Special == TileSpecial.Bomb)));
+        }
+
+        [Test]
+        public void ColorBombDoubleTap_NoCombo()
+        {
+            var board = new Board("aCHab");
+            var r = board.Resolve(moved: new[] { C(1, 0), C(1, 0) }, forced: new[] { C(1, 0), C(1, 0) });
+
+            Assert.IsEmpty(r.Converted);
+        }
+
+        [Test]
+        public void RocketHitsColorBomb_NoCombo()
+        {
+            var r = new Board(
+                "cbcb",
+                "HaCa",
+                "bcbc").Resolve(forced: new[] { C(0, 1) });
+
+            Assert.IsEmpty(r.Converted);
+        }
     }
 }

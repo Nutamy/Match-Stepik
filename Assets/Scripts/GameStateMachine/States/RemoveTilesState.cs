@@ -115,6 +115,13 @@ namespace GameStateMachine.States
 
             _audioManager.PlayWhoosh();
             var originDelay = new Dictionary<Vector2Int, float>();
+            // Клетки, откуда стартует какой-нибудь взрыв: задетая там фишка сработает, когда до неё дойдёт волна
+            var origins = new HashSet<Vector2Int>();
+            foreach (var blast in _matchFinder.RocketBlasts) origins.Add(blast.Origin);
+            // Комбо цветной бомбы: фишки её цвета сначала становятся ракетами или бомбами, потом срабатывают
+            var converted = new Dictionary<Tile, TileSpecial>();
+            foreach (var (tile, special) in _matchFinder.Converted) converted[tile] = special;
+            int convertedSounds = 0;
             foreach (var blast in _matchFinder.RocketBlasts)
             {
                 // Ракета, задетая другой ракетой, стартует, когда до неё долетели
@@ -136,11 +143,30 @@ namespace GameStateMachine.States
                     float delay = start + (isBomb ? TileFXStyle.BombFuse
                         : isColorBomb ? TileFXStyle.BombFuse + TileFXStyle.ColorWaveStep * distance
                         : RocketFlightFX.DelayFor(distance));
+                    if (converted.TryGetValue(tile, out var into))
+                    {
+                        ConvertAfter(tile, into, delay, convertedSounds++ < MaxConvertSounds).Forget();
+                        delay += TileFXStyle.ComboHold;
+                    }
                     if (!delays.TryGetValue(tile, out var existing) || delay < existing) delays[tile] = delay;
-                    if (SpecialTiles.IsSpecial(tile.Special) && !originDelay.ContainsKey(cell)) originDelay[cell] = delay;
+                    if (origins.Contains(cell) && !originDelay.ContainsKey(cell)) originDelay[cell] = delay;
                 }
             }
             return delays;
+        }
+
+        // Сколько превращений в комбо озвучивать: дальше звуки сливаются в шум
+        private const int MaxConvertSounds = 4;
+
+        private async UniTaskVoid ConvertAfter(Tile tile, TileSpecial special, float delay, bool withSound)
+        {
+            bool cancelled = await UniTask.Delay(TimeSpan.FromSeconds(delay), cancellationToken: _gameBoard.destroyCancellationToken)
+                .SuppressCancellationThrow();
+            if (cancelled || tile == null) return;
+            _fxPool.PlayFX(tile.transform.position, _gameBoard.transform, TileColor(tile));
+            tile.SetSpecial(special);
+            _animation.DoPunchAnimate(tile.gameObject, Vector3.one * RocketPunch, 0.25f);
+            if (withSound) _audioManager.PlayWhoosh();
         }
 
         private async UniTaskVoid ExplodeAfter(float delay, Vector2Int origin, Color color, float scale, GroupSound sound)
