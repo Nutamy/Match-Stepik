@@ -4,27 +4,20 @@ namespace Game.Tiles
 {
     /// <summary>
     /// Картинки особых фишек. Если в Resources/Specials лежит готовая графика, берётся она,
-    /// иначе рисуется временная заглушка: белая двойная стрелка с тёмным контуром.
+    /// иначе рисуется временная заглушка: белая стрелка с тёмным контуром.
     /// </summary>
     public static class SpecialSprites
     {
-        // Assets/Resources/Specials/Rocket.png — значок ракеты, смотрит вправо-влево (горизонтально)
-        private const string RocketPath = "Specials/Rocket";
-        // Assets/Resources/Specials/RocketFlight.png — летящая ракета, носом вправо
+        // Assets/Resources/Specials/RocketFlight.png — ракета носом вправо: и фишка-ракета, и летящая ракета
         private const string RocketFlightPath = "Specials/RocketFlight";
 
-        private static Sprite _rocket;
         private static Sprite _rocketFlight;
-
-        public static Sprite Rocket => _rocket != null ? _rocket : (_rocket = Resources.Load<Sprite>(RocketPath) ?? CreateDoubleArrow());
 
         public static Sprite RocketFlight => _rocketFlight != null
             ? _rocketFlight
             : (_rocketFlight = Resources.Load<Sprite>(RocketFlightPath) ?? CreateArrow());
 
         private const int Size = 128;
-
-        private static Sprite CreateDoubleArrow() => Draw("RocketPlaceholder", (x, y) => DoubleArrow(x, y));
 
         private static Sprite CreateArrow() => Draw("RocketFlightPlaceholder", (x, y) => Arrow(x, y));
 
@@ -61,15 +54,6 @@ namespace Game.Tiles
             texture.SetPixels(pixels);
             texture.Apply();
             return Sprite.Create(texture, new Rect(0, 0, Size, Size), new Vector2(0.5f, 0.5f), Size);
-        }
-
-        // ◄═► : стержень и два наконечника
-        private static float DoubleArrow(float x, float y)
-        {
-            float bar = Box(x, y, 0.5f, 0.13f);
-            float right = Triangle(x, y, 0.38f, 0.86f, 0.36f);
-            float left = Triangle(-x, y, 0.38f, 0.86f, 0.36f);
-            return Mathf.Min(bar, Mathf.Min(right, left));
         }
 
         // ═► : стержень и наконечник справа

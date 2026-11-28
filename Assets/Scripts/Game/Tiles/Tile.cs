@@ -27,18 +27,22 @@ namespace Game.Tiles
         public void SetSpecial(TileSpecial special)
         {
             Special = special;
+            var main = GetComponent<SpriteRenderer>();
             if (special == TileSpecial.None)
             {
+                main.enabled = true;
                 if (_specialRenderer != null) _specialRenderer.gameObject.SetActive(false);
                 return;
             }
 
+            // Ракета рисуется вместо фишки: одна ракета носом туда, куда полетит
             var overlay = GetSpecialRenderer();
-            overlay.sprite = SpecialSprites.Rocket;
-            // Значок нарисован горизонтальным; вертикальная ракета — тот же значок, повёрнутый на 90°
+            overlay.sprite = SpecialSprites.RocketFlight;
+            // Картинка смотрит вправо; вертикальная ракета — та же картинка носом вверх
             overlay.transform.localRotation = Quaternion.Euler(0f, 0f, special == TileSpecial.RocketVertical ? 90f : 0f);
             FitOverlay(overlay);
             overlay.gameObject.SetActive(true);
+            main.enabled = false;
         }
 
         private SpriteRenderer GetSpecialRenderer()
@@ -55,8 +59,8 @@ namespace Game.Tiles
             return _specialRenderer;
         }
 
-        // Значок занимает OverlayFill от размера фишки независимо от разрешения картинки
-        private const float OverlayFill = 0.92f;
+        // Ракета по длине занимает OverlayFill от размера фишки независимо от разрешения картинки
+        private const float OverlayFill = 1f;
 
         private void FitOverlay(SpriteRenderer overlay)
         {

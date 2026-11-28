@@ -32,6 +32,11 @@ namespace GameStateMachine.States
         private const float HintPullDuration = 0.36f;   // туда и обратно
         private const float HintPause = 1.1f;
 
+        // Двойное касание ракеты запускает её без хода-обмена
+        private const float DoubleTapTime = 0.35f;
+        private Vector2Int _lastTapCell = Vector2Int.one * -1;
+        private float _lastTapTime = -1f;
+
         private CancellationTokenSource _hintCts;
         private Tween _hintPullA;
         private Tween _hintPullB;
@@ -65,6 +70,12 @@ namespace GameStateMachine.States
             var world = PointerWorld();
             var cell = _grid.WorldToGrid(world);
             if (!IsPlayable(cell)) return;
+
+            if (IsDoubleTap(cell) && IsRocket(cell))
+            {
+                Activate(cell);
+                return;
+            }
 
             var selected = _grid.CurrentPosition;
             // Два нажатия: выбрана фишка, нажали соседнюю — меняем
@@ -137,11 +148,38 @@ namespace GameStateMachine.States
             _stateSwitcher.SwichState<SwapTilesState>();
         }
 
+        private bool IsDoubleTap(Vector2Int cell)
+        {
+            float now = Time.unscaledTime;
+            bool isDouble = cell == _lastTapCell && now - _lastTapTime <= DoubleTapTime;
+            // Третье касание подряд не считается вторым двойным
+            _lastTapCell = isDouble ? _emptyPosition : cell;
+            _lastTapTime = now;
+            return isDouble;
+        }
+
+        private bool IsRocket(Vector2Int cell) =>
+            Game.MatchTiles.SpecialTiles.IsRocket(_grid.GetValue(cell.x, cell.y).Special);
+
+        private void Activate(Vector2Int cell)
+        {
+            _isPressed = false;
+            if (_grid.CurrentPosition != _emptyPosition)
+            {
+                _animation.AnimateTile(_grid.GetValue(_grid.CurrentPosition.x, _grid.CurrentPosition.y), 1f);
+            }
+
+            _grid.SetCurrentPosition(cell);
+            _grid.SetTargetPosition(cell);
+            _stateSwitcher.SwichState<SwapTilesState>();
+        }
+
         private bool IsPlayable(Vector2Int cell) => IsValidPosition(cell) && !IsBlankPosition(cell);
 
         public void Enter()
         {
             _isPressed = false;
+            _lastTapCell = _emptyPosition;
             _inputReader.EnableInputs(true);
             DeselectTile();
             RestartHintTimer();

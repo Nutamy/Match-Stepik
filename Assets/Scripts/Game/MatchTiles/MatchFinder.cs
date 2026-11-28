@@ -76,6 +76,8 @@ namespace Game.MatchTiles
         public static object GetMatchKey(Tile tile)
         {
             if (tile == null || !tile.IsInteractable) return null;
+            // У ракеты нет цвета: она ни с чем не собирается в линию, но её можно двигать и убирать
+            if (tile.Special != TileSpecial.None) return tile;
             return tile.TileConfig;
         }
 

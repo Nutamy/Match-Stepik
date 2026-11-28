@@ -9,8 +9,8 @@ namespace Tests.Editor
     public class SpecialTilesTests
     {
         // Строки сверху вниз. '.' — пустая клетка; '#' — неподвижная клетка уровня;
-        // строчная буква — обычная фишка; заглавная — ракета того же цвета:
-        // H — горизонтальная (убирает строку), V — вертикальная (убирает столбец) цвета 'a'.
+        // строчная буква — обычная фишка; H — горизонтальная ракета (убирает строку),
+        // V — вертикальная (убирает столбец). У ракеты нет цвета: её ключ уникален, в линии она не собирается.
         private class Board
         {
             private readonly string[] _rows;
@@ -25,7 +25,7 @@ namespace Tests.Editor
             {
                 char c = At(x, y);
                 if (c == '.' || c == '#') return null;
-                if (c == 'H' || c == 'V') return 'a';
+                if (c == 'H' || c == 'V') return new Vector2Int(x, y);
                 return c;
             }
 
@@ -88,36 +88,42 @@ namespace Tests.Editor
         }
 
         [Test]
-        public void HorizontalRocketInMatch_ClearsWholeRow()
+        public void Rocket_HasNoColor_AndDoesNotMatch()
+        {
+            var r = new Board("aHa").Resolve();
+            Assert.IsEmpty(r.Remove);
+        }
+
+        [Test]
+        public void HorizontalRocket_ClearsWholeRow()
         {
             var r = new Board(
                 "bcdbc",
                 "aHacd",
-                "cdbcb").Resolve();
+                "cdbcb").Resolve(forced: new[] { C(1, 1) });
 
-            // Тройка a-H-a и вся средняя строка
             CollectionAssert.AreEquivalent(new[] { C(0, 1), C(1, 1), C(2, 1), C(3, 1), C(4, 1) }, r.Remove);
             Assert.AreEqual(1, r.Blasts.Count);
             Assert.AreEqual(C(1, 1), r.Blasts[0].Origin);
-            CollectionAssert.AreEquivalent(new[] { C(3, 1), C(4, 1) }, r.Blasts[0].Cleared);
+            Assert.AreEqual(4, r.Blasts[0].Cleared.Count);
         }
 
         [Test]
-        public void VerticalRocketInMatch_ClearsWholeColumn()
+        public void VerticalRocket_ClearsWholeColumn()
         {
             var r = new Board(
                 "bcd",
                 "dce",
                 "aVa",
-                "cdb").Resolve();
+                "cdb").Resolve(forced: new[] { C(1, 1) });
 
-            CollectionAssert.AreEquivalent(new[] { C(0, 1), C(1, 1), C(2, 1), C(1, 0), C(1, 2), C(1, 3) }, r.Remove);
+            CollectionAssert.AreEquivalent(new[] { C(1, 0), C(1, 1), C(1, 2), C(1, 3) }, r.Remove);
         }
 
         [Test]
         public void Rocket_DoesNotClearFixedCells()
         {
-            var r = new Board("aHa#bc").Resolve();
+            var r = new Board("aHa#bc").Resolve(forced: new[] { C(1, 0) });
             Assert.That(r.Remove, Has.No.Member(C(3, 0)));
             Assert.That(r.Remove, Has.Member(C(4, 0)));
             Assert.That(r.Remove, Has.Member(C(5, 0)));
@@ -129,8 +135,8 @@ namespace Tests.Editor
             // Горизонтальная ракета в средней строке задевает вертикальную в столбце 4
             var r = new Board(
                 "bcdbc",
-                "aHabV",
-                "cdbcb").Resolve();
+                "cHabV",
+                "cdbcb").Resolve(forced: new[] { C(1, 1) });
 
             Assert.AreEqual(2, r.Blasts.Count);
             Assert.That(r.Remove, Has.Member(C(4, 2)));
@@ -155,18 +161,19 @@ namespace Tests.Editor
         [Test]
         public void NewRocket_SurvivesBlastOfOldRocket()
         {
-            // Вертикальная линия из 4 'a' в столбце 0 с ракетой H внизу:
-            // H срабатывает и проходит по нижней строке, новая ракета появляется в другой клетке линии
+            // Вертикальная четвёрка 'a' в столбце 0 даёт ракету во второй клетке (0,1);
+            // в тот же шаг срабатывает ракета H в строке 1 и не задевает новую ракету
             var r = new Board(
                 "ab",
                 "ac",
-                "ab",
-                "Hc").Resolve();
+                "aH",
+                "ac").Resolve(forced: new[] { C(1, 1) });
 
             Assert.AreEqual(1, r.Spawns.Count);
-            Assert.AreNotEqual(C(0, 0), r.Spawns[0].Cell);
-            Assert.That(r.Remove, Has.No.Member(r.Spawns[0].Cell));
-            Assert.That(r.Remove, Has.Member(C(1, 0)));
+            Assert.AreEqual(C(0, 1), r.Spawns[0].Cell);
+            Assert.That(r.Remove, Has.No.Member(C(0, 1)));
+            Assert.AreEqual(1, r.Blasts.Count);
+            Assert.IsEmpty(r.Blasts[0].Cleared);
         }
 
         [Test]

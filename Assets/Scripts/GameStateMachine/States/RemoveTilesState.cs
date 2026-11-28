@@ -172,7 +172,14 @@ namespace GameStateMachine.States
                 _audioManager.PlayGroup(order[i], pitch, i * CascadeSound.GroupStagger);
         }
 
-        private static Color TileColor(Tile tile) => tile.TileConfig != null ? tile.TileConfig.FxColor : Color.white;
+        // У ракеты своего цвета нет — шлейф и вспышка золотые, как сама ракета
+        private static readonly Color RocketColor = new Color(1f, 0.78f, 0.3f);
+
+        private static Color TileColor(Tile tile)
+        {
+            if (tile.Special != TileSpecial.None) return RocketColor;
+            return tile.TileConfig != null ? tile.TileConfig.FxColor : Color.white;
+        }
 
         // 4, 5 в ряд и пересечение — большой взрыв в центре группы поверх обычных вспышек
         private void PlayBigExplosions()

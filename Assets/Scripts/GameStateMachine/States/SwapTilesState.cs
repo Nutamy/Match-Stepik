@@ -43,13 +43,20 @@ namespace GameStateMachine.States
             _turnCombo.Reset();
             // play sound
             _audioManager.PlayWhoosh();
-            await SwapTiles(_grid.CurrentPosition, _grid.TargetPosition);
+            // Двойное касание ракеты: клетка хода одна, менять нечего — ракета просто срабатывает
+            bool isActivation = _grid.CurrentPosition == _grid.TargetPosition;
+            if (!isActivation) await SwapTiles(_grid.CurrentPosition, _grid.TargetPosition);
             // Ракета, которую сдвинул игрок, срабатывает и без совпадения
             var moved = new[] { _grid.CurrentPosition, _grid.TargetPosition };
             if (_matchFinder.CheckBoardForMatches(_grid, moved) == false)
             {
                 // play sound no match
                 _audioManager.PlayNoMatch();
+                if (isActivation)
+                {
+                    _stateSwitcher.SwichState<PlayerTurnState>();
+                    return;
+                }
                 await ShakeSwappedTiles(_grid.CurrentPosition, _grid.TargetPosition);
                 await SwapTiles(_grid.TargetPosition, _grid.CurrentPosition);
                 _stateSwitcher.SwichState<PlayerTurnState>();
